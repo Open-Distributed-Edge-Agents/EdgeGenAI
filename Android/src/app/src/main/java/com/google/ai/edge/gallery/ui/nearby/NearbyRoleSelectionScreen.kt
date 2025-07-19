@@ -19,25 +19,52 @@ package com.google.ai.edge.gallery.ui.nearby
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
 fun NearbyRoleSelectionScreen(
-    onRoleSelected: (isCommander: Boolean) -> Unit
+    onRoleSelected: (isCommander: Boolean, agentName: String?) -> Unit
 ) {
+    var selectedAgent by remember { mutableStateOf<Int?>(null) }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = { onRoleSelected(true) }) {
+        Button(onClick = { onRoleSelected(true, null) }) {
             Text("Commander")
         }
-        Button(onClick = { onRoleSelected(false) }) {
+        (1..5).forEach { agentNumber ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { selectedAgent = agentNumber }
+            ) {
+                Checkbox(
+                    checked = selectedAgent == agentNumber,
+                    onCheckedChange = { selectedAgent = agentNumber }
+                )
+                Text("Agent $agentNumber")
+            }
+        }
+        Button(
+            onClick = { onRoleSelected(false, "Agent$selectedAgent") },
+            enabled = selectedAgent != null
+        ) {
             Text("Subordinate")
         }
     }

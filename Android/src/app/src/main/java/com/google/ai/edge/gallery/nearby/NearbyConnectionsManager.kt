@@ -97,13 +97,14 @@ class NearbyConnectionsManager @Inject constructor(
         }
     }
 
+    private var agentName: String? = null
     private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
         override fun onEndpointFound(endpointId: String, discoveredEndpointInfo: DiscoveredEndpointInfo) {
             Log.d(TAG, "Endpoint found: $endpointId")
             if (discoveredEndpointInfo.endpointName == "Commander") {
                 onOriginalCommanderFound()
             }
-            connectionsClient.requestConnection("Subordinate", endpointId, connectionLifecycleCallback)
+            connectionsClient.requestConnection(agentName ?: "Subordinate", endpointId, connectionLifecycleCallback)
         }
 
         override fun onEndpointLost(endpointId: String) {
@@ -141,7 +142,8 @@ class NearbyConnectionsManager @Inject constructor(
         Log.d(TAG, "Stopped advertising")
     }
 
-    fun startDiscovery() {
+    fun startDiscovery(agentName: String?) {
+        this.agentName = agentName
         if (isDiscovering) {
             Log.d(TAG, "Already discovering")
             return

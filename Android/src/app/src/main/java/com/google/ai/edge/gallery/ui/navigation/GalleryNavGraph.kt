@@ -270,18 +270,22 @@ fun GalleryNavHost(
     }
 
     composable(route = "nearby_role_selection") {
-      NearbyRoleSelectionScreen(onRoleSelected = { isCommander ->
-        navController.navigate("nearby_chat/$isCommander")
+      NearbyRoleSelectionScreen(onRoleSelected = { isCommander, agentName ->
+        navController.navigate("nearby_chat/$isCommander/$agentName")
       })
     }
 
     composable(
-        route = "nearby_chat/{isCommander}",
-        arguments = listOf(navArgument("isCommander") { type = NavType.BoolType })
+        route = "nearby_chat/{isCommander}/{agentName}",
+        arguments = listOf(
+            navArgument("isCommander") { type = NavType.BoolType },
+            navArgument("agentName") { type = NavType.StringType; nullable = true }
+        )
     ) { backStackEntry ->
         val viewModel: LlmChatViewModel = hiltViewModel(backStackEntry)
         val isCommander = backStackEntry.arguments?.getBoolean("isCommander") ?: false
-        viewModel.startNearbyConnections(isCommander)
+        val agentName = backStackEntry.arguments?.getString("agentName")
+        viewModel.startNearbyConnections(isCommander, agentName)
 
         NearbyChatView(
             viewModel = viewModel

@@ -83,12 +83,23 @@ open class LlmChatViewModelBase(
         }
     }
 
-    fun startNearbyConnections(isCommander: Boolean) {
+    fun startNearbyConnections(isCommander: Boolean, agentName: String?) {
         this.isCommander = isCommander
+        val role = if (isCommander) "Commander" else "Agent"
+        val systemPrompt = systemPromptRepository.getSystemPrompt(role)
+        if (systemPrompt != null) {
+            val prompt = if (role == "Agent") {
+                String.format(systemPrompt.prompt, agentName)
+            } else {
+                systemPrompt.prompt
+            }
+            // TODO: Use the prompt to initialize the model
+        }
+
         if (isCommander) {
             nearbyConnectionsManager.startAdvertising("Commander")
         } else {
-            nearbyConnectionsManager.startDiscovery()
+            nearbyConnectionsManager.startDiscovery(agentName)
         }
     }
 
@@ -320,7 +331,8 @@ open class LlmChatViewModelBase(
 
 @HiltViewModel
 class LlmChatViewModel @Inject constructor(
-    nearbyConnectionsManager: NearbyConnectionsManager
+    nearbyConnectionsManager: NearbyConnectionsManager,
+    private val systemPromptRepository: SystemPromptRepository
 ) : LlmChatViewModelBase(curTask = TASK_LLM_CHAT, nearbyConnectionsManager)
 
 @HiltViewModel
