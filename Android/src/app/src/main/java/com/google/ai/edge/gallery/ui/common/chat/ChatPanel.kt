@@ -116,6 +116,7 @@ fun ChatPanel(
   onImageSelected: (Bitmap) -> Unit = {},
   chatInputType: ChatInputType = ChatInputType.TEXT,
   showStopButtonInInputWhenInProgress: Boolean = false,
+  bottomContent: @Composable () -> Unit = {}
 ) {
   val uiState by viewModel.uiState.collectAsState()
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -542,6 +543,7 @@ fun ChatPanel(
           showAudioItemsInMenu =
             selectedModel.llmSupportAudio && task.type === TaskType.LLM_ASK_AUDIO,
           showStopButtonWhenInProgress = showStopButtonInInputWhenInProgress,
+          bottomContent = bottomContent
         )
       }
 

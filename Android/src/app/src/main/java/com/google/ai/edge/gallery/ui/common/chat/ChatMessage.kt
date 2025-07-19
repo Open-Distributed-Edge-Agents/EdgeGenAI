@@ -49,14 +49,15 @@ enum class ChatSide {
 
 /** Base class for a chat message. */
 open class ChatMessage(
-  open val type: ChatMessageType,
-  open val side: ChatSide,
-  open val latencyMs: Float = -1f,
-  open val accelerator: String = "",
+    open val type: ChatMessageType,
+    open val side: ChatSide,
+    open val latencyMs: Float = -1f,
+    open val accelerator: String = "",
+    open val author: String? = null
 ) {
-  open fun clone(): ChatMessage {
-    return ChatMessage(type = type, side = side, latencyMs = latencyMs)
-  }
+    open fun clone(): ChatMessage {
+        return ChatMessage(type = type, side = side, latencyMs = latencyMs, author = author)
+    }
 }
 
 /** Chat message for showing loading status. */
@@ -80,22 +81,23 @@ class ChatMessageConfigValuesChange(
 
 /** Chat message for plain text. */
 open class ChatMessageText(
-  val content: String,
-  override val side: ChatSide,
-  // Negative numbers will hide the latency display.
-  override val latencyMs: Float = 0f,
-  val isMarkdown: Boolean = true,
-
-  // Benchmark result for LLM response.
-  var llmBenchmarkResult: ChatMessageBenchmarkLlmResult? = null,
-  override val accelerator: String = "",
+    val content: String,
+    override val side: ChatSide,
+    // Negative numbers will hide the latency display.
+    override val latencyMs: Float = 0f,
+    val isMarkdown: Boolean = true,
+    // Benchmark result for LLM response.
+    var llmBenchmarkResult: ChatMessageBenchmarkLlmResult? = null,
+    override val accelerator: String = "",
+    override val author: String? = null
 ) :
-  ChatMessage(
-    type = ChatMessageType.TEXT,
-    side = side,
-    latencyMs = latencyMs,
-    accelerator = accelerator,
-  ) {
+    ChatMessage(
+        type = ChatMessageType.TEXT,
+        side = side,
+        latencyMs = latencyMs,
+        accelerator = accelerator,
+        author = author
+    ) {
   override fun clone(): ChatMessageText {
     return ChatMessageText(
       content = content,

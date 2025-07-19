@@ -85,7 +85,6 @@ private const val TAG = "AGChatView"
 fun ChatView(
   task: Task,
   viewModel: ChatViewModel,
-  modelManagerViewModel: ModelManagerViewModel,
   onSendMessage: (Model, List<ChatMessage>) -> Unit,
   onRunAgainClicked: (Model, ChatMessage) -> Unit,
   onBenchmarkClicked: (Model, ChatMessage, Int, Int) -> Unit,
@@ -96,9 +95,10 @@ fun ChatView(
   onStopButtonClicked: (Model) -> Unit = {},
   chatInputType: ChatInputType = ChatInputType.TEXT,
   showStopButtonInInputWhenInProgress: Boolean = false,
+  bottomContent: @Composable () -> Unit = {}
 ) {
   val uiState by viewModel.uiState.collectAsState()
-  val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
+  val modelManagerUiState by viewModel.modelManagerViewModel.uiState.collectAsState()
   val selectedModel = modelManagerUiState.selectedModel
   var selectedImage by remember { mutableStateOf<Bitmap?>(null) }
   var showImageViewer by remember { mutableStateOf(false) }
@@ -244,6 +244,7 @@ fun ChatView(
               modifier = Modifier.weight(1f).graphicsLayer { alpha = curAlpha },
               chatInputType = chatInputType,
               showStopButtonInInputWhenInProgress = showStopButtonInInputWhenInProgress,
+              bottomContent = bottomContent
             )
           }
         }

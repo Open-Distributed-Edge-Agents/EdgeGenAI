@@ -152,7 +152,7 @@ private fun getMessageLayoutConfig(
   var modifier = Modifier.padding(bottom = 2.dp)
 
   if (message.side == ChatSide.AGENT) {
-    userLabel = agentName
+    userLabel = message.author ?: agentName
   }
 
   when (message) {

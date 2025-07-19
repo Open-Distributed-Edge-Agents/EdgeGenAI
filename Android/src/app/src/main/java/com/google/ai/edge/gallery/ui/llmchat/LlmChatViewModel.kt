@@ -33,6 +33,7 @@ import com.google.ai.edge.gallery.ui.common.chat.ChatMessageText
 import com.google.ai.edge.gallery.ui.common.chat.ChatMessageType
 import com.google.ai.edge.gallery.ui.common.chat.ChatMessageWarning
 import com.google.ai.edge.gallery.ui.common.chat.ChatSide
+import com.google.ai.edge.gallery.nearby.NearbyConnectionsManager
 import com.google.ai.edge.gallery.ui.common.chat.ChatViewModel
 import com.google.ai.edge.gallery.ui.common.chat.Stat
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
@@ -51,10 +52,59 @@ private val STATS =
     Stat(id = "latency", label = "Latency", unit = "sec"),
   )
 
-open class LlmChatViewModelBase(val curTask: Task) : ChatViewModel(task = curTask) {
-  fun generateResponse(
-    model: Model,
-    input: String,
+open class LlmChatViewModelBase(
+    val curTask: Task,
+    private val nearbyConnectionsManager: NearbyConnectionsManager
+) : ChatViewModel(task = curTask) {
+
+    private var isCommander = false
+
+    init {
+        nearbyConnectionsManager.onMessageReceived = { endpointId, message ->
+            // Add message to chat history
+            val chatMessage = ChatMessageText(
+                content = message,
+                side = ChatSide.AGENT,
+                author = endpointId
+            )
+            addMessage(model = curModel.value!!, message = chatMessage)
+
+            if (isCommander) {
+                // Broadcast message to other subordinates
+                nearbyConnectionsManager.broadcastMessage(message)
+            }
+        }
+    }
+
+    fun startNearbyConnections(isCommander: Boolean) {
+        this.isCommander = isCommander
+        if (isCommander) {
+            nearbyConnectionsManager.startAdvertising("Commander")
+        } else {
+            nearbyConnectionsManager.startDiscovery()
+        }
+    }
+
+    fun stopNearbyConnections() {
+        nearbyConnectionsManager.stopAllEndpoints()
+    }
+
+    fun sendMessage(message: String, isLocal: Boolean) {
+        if (!isLocal) {
+            if (isCommander) {
+                nearbyConnectionsManager.broadcastMessage(message)
+            } else {
+                nearbyConnectionsManager.sendMessage(
+                    nearbyConnectionsManager.getConnectedEndpoints().first(),
+                    message
+                )
+            }
+        }
+    }
+
+    fun generateResponse(
+        model: Model,
+        input: String,
     images: List<Bitmap> = listOf(),
     audioMessages: List<ChatMessageAudioClip> = listOf(),
     onError: () -> Unit,
@@ -262,12 +312,16 @@ open class LlmChatViewModelBase(val curTask: Task) : ChatViewModel(task = curTas
 }
 
 @HiltViewModel
-class LlmChatViewModel @Inject constructor() : LlmChatViewModelBase(curTask = TASK_LLM_CHAT)
+class LlmChatViewModel @Inject constructor(
+    nearbyConnectionsManager: NearbyConnectionsManager
+) : LlmChatViewModelBase(curTask = TASK_LLM_CHAT, nearbyConnectionsManager)
 
 @HiltViewModel
-class LlmAskImageViewModel @Inject constructor() :
-  LlmChatViewModelBase(curTask = TASK_LLM_ASK_IMAGE)
+class LlmAskImageViewModel @Inject constructor(
+    nearbyConnectionsManager: NearbyConnectionsManager
+) : LlmChatViewModelBase(curTask = TASK_LLM_ASK_IMAGE, nearbyConnectionsManager)
 
 @HiltViewModel
-class LlmAskAudioViewModel @Inject constructor() :
-  LlmChatViewModelBase(curTask = TASK_LLM_ASK_AUDIO)
+class LlmAskAudioViewModel @Inject constructor(
+    nearbyConnectionsManager: NearbyConnectionsManager
+) : LlmChatViewModelBase(curTask = TASK_LLM_ASK_AUDIO, nearbyConnectionsManager)
