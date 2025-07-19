@@ -91,6 +91,9 @@ class NearbyConnectionsManager @Inject constructor(
             Log.d(TAG, "Disconnected from $endpointId")
             connectedEndpoints.remove(endpointId)
             onEndpointDisconnected?.invoke(endpointId)
+            if (endpointId == "Commander") {
+                onCommanderDisconnected()
+            }
         }
     }
 
@@ -185,5 +188,21 @@ class NearbyConnectionsManager @Inject constructor(
         connectedEndpoints.clear()
         stopAdvertising()
         stopDiscovery()
+    }
+
+    fun onCommanderDisconnected() {
+        // If I am the next in line, I will become the new commander.
+        // Otherwise, I will start discovering for a new commander.
+        val sortedEndpoints = connectedEndpoints.keys.sorted()
+        if (sortedEndpoints.isNotEmpty() && sortedEndpoints.first() == getMyEndpointId()) {
+            startAdvertising("Commander")
+        } else {
+            startDiscovery()
+        }
+    }
+
+    private fun getMyEndpointId(): String {
+        // This is a placeholder. In a real app, you would need to get the endpoint ID of the current device.
+        return "MyEndpointId"
     }
 }
