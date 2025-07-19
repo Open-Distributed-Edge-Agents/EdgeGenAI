@@ -90,6 +90,13 @@ open class LlmChatViewModelBase(
                 nearbyConnectionsManager.startDiscovery(agentName)
             }
         }
+
+        nearbyConnectionsManager.onImpersonationDetected = { endpointName ->
+            val chatMessage = ChatMessageWarning(
+                content = "Impersonation detected: $endpointName"
+            )
+            addMessage(model = curModel.value!!, message = chatMessage)
+        }
     }
 
     fun startNearbyConnections(isCommander: Boolean, agentName: String?) {

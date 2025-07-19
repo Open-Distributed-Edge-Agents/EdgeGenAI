@@ -75,11 +75,18 @@ class NearbyConnectionsManager @Inject constructor(
         }
     }
 
+    var onImpersonationDetected: ((String) -> Unit)? = null
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             // Automatically accept the connection on both sides.
+            val endpointName = connectionInfo.endpointName
+            if (connectedEndpoints.containsValue(endpointName)) {
+                onImpersonationDetected?.invoke(endpointName)
+                connectionsClient.rejectConnection(endpointId)
+                return
+            }
             connectionsClient.acceptConnection(endpointId, payloadCallback)
-            connectedEndpoints[endpointId] = connectionInfo.endpointName
+            connectedEndpoints[endpointId] = endpointName
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
