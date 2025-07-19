@@ -64,8 +64,9 @@ class NearbyConnectionsManager @Inject constructor(
             if (payload.type == Payload.Type.BYTES) {
                 val receivedBytes = payload.asBytes() ?: return
                 val signedPayload = Json.decodeFromString(SignedPayload.serializer(), String(receivedBytes))
-                val isValid = cryptoManager.verify(signedPayload.alias, signedPayload.message.toByteArray(), signedPayload.signature)
-                onMessageReceived?.invoke(endpointId, signedPayload.message, isValid)
+                val isSignatureValid = cryptoManager.verify(signedPayload.alias, signedPayload.message.toByteArray(), signedPayload.signature)
+                val isIdentityValid = connectedEndpoints[endpointId] == signedPayload.alias
+                onMessageReceived?.invoke(endpointId, signedPayload.message, isSignatureValid && isIdentityValid)
             }
         }
 
