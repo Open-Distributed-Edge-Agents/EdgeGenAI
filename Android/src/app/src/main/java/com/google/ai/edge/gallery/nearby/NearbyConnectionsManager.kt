@@ -100,6 +100,9 @@ class NearbyConnectionsManager @Inject constructor(
     private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
         override fun onEndpointFound(endpointId: String, discoveredEndpointInfo: DiscoveredEndpointInfo) {
             Log.d(TAG, "Endpoint found: $endpointId")
+            if (discoveredEndpointInfo.endpointName == "Commander") {
+                onOriginalCommanderFound()
+            }
             connectionsClient.requestConnection("Subordinate", endpointId, connectionLifecycleCallback)
         }
 
@@ -204,5 +207,17 @@ class NearbyConnectionsManager @Inject constructor(
     private fun getMyEndpointId(): String {
         // This is a placeholder. In a real app, you would need to get the endpoint ID of the current device.
         return "MyEndpointId"
+    }
+
+    fun onOriginalCommanderFound() {
+        // If I am a temporary commander, I will stop advertising and start discovering.
+        // Otherwise, I will disconnect from the temporary commander and connect to the original one.
+        if (isAdvertising) {
+            stopAdvertising()
+            startDiscovery()
+        } else {
+            stopAllEndpoints()
+            startDiscovery()
+        }
     }
 }
