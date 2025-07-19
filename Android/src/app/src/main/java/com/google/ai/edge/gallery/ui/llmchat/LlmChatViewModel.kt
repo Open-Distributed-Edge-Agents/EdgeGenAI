@@ -58,33 +58,43 @@ open class LlmChatViewModelBase(
 ) : ChatViewModel(task = curTask) {
 
     private var isCommander = false
+    private var agentName: String? = null
 
     init {
-        nearbyConnectionsManager.onMessageReceived = { endpointId, message ->
-            // Add message to chat history
-            val chatMessage = ChatMessageText(
-                content = message,
-                side = ChatSide.AGENT,
-                author = endpointId
-            )
-            addMessage(model = curModel.value!!, message = chatMessage)
+        nearbyConnectionsManager.onMessageReceived = { endpointId, message, isValid ->
+            if (isValid) {
+                // Add message to chat history
+                val chatMessage = ChatMessageText(
+                    content = message,
+                    side = ChatSide.AGENT,
+                    author = endpointId
+                )
+                addMessage(model = curModel.value!!, message = chatMessage)
 
-            if (isCommander) {
-                // Broadcast message to other subordinates
-                nearbyConnectionsManager.broadcastMessage(message)
+                if (isCommander) {
+                    // Broadcast message to other subordinates
+                    nearbyConnectionsManager.broadcastMessage(message, "Commander")
+                }
+            } else {
+                // Add a warning message to the chat
+                val chatMessage = ChatMessageWarning(
+                    content = "Invalid message from $endpointId"
+                )
+                addMessage(model = curModel.value!!, message = chatMessage)
             }
         }
 
         nearbyConnectionsManager.onEndpointDisconnected = { endpointId ->
             if (endpointId == "Commander") {
                 // The commander is disconnected, start discovering for a new one.
-                nearbyConnectionsManager.startDiscovery()
+                nearbyConnectionsManager.startDiscovery(agentName)
             }
         }
     }
 
     fun startNearbyConnections(isCommander: Boolean, agentName: String?) {
         this.isCommander = isCommander
+        this.agentName = agentName
         val role = if (isCommander) "Commander" else "Agent"
         val systemPrompt = systemPromptRepository.getSystemPrompt(role)
         if (systemPrompt != null) {
@@ -109,12 +119,14 @@ open class LlmChatViewModelBase(
 
     fun sendMessage(message: String, isLocal: Boolean) {
         if (!isLocal) {
+            val alias = if (isCommander) "Commander" else agentName
             if (isCommander) {
-                nearbyConnectionsManager.broadcastMessage(message)
+                nearbyConnectionsManager.broadcastMessage(message, alias)
             } else {
                 nearbyConnectionsManager.sendMessage(
                     nearbyConnectionsManager.getConnectedEndpoints().first(),
-                    message
+                    message,
+                    alias
                 )
             }
         }

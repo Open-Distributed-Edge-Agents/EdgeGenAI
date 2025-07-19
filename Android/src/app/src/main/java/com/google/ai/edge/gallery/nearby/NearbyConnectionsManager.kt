@@ -30,17 +30,20 @@ import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback
 import com.google.android.gms.nearby.connection.Payload
 import com.google.android.gms.nearby.connection.PayloadCallback
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
+import com.google.ai.edge.gallery.crypto.CryptoManager
 import com.google.android.gms.nearby.connection.Strategy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.serialization.json.Json
 
 private const val TAG = "NearbyConnectionsManager"
 private const val SERVICE_ID = "com.google.ai.edge.gallery.SERVICE_ID"
 
 @Singleton
 class NearbyConnectionsManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val cryptoManager: CryptoManager
 ) {
 
     private val connectionsClient: ConnectionsClient by lazy {
@@ -52,7 +55,7 @@ class NearbyConnectionsManager @Inject constructor(
 
     private val connectedEndpoints = mutableMapOf<String, String>()
 
-    var onMessageReceived: ((String, String) -> Unit)? = null
+    var onMessageReceived: ((String, String, Boolean) -> Unit)? = null
     var onEndpointConnected: ((String) -> Unit)? = null
     var onEndpointDisconnected: ((String) -> Unit)? = null
 
@@ -60,8 +63,9 @@ class NearbyConnectionsManager @Inject constructor(
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES) {
                 val receivedBytes = payload.asBytes() ?: return
-                val message = String(receivedBytes)
-                onMessageReceived?.invoke(endpointId, message)
+                val signedPayload = Json.decodeFromString(SignedPayload.serializer(), String(receivedBytes))
+                val isValid = cryptoManager.verify(signedPayload.alias, signedPayload.message.toByteArray(), signedPayload.signature)
+                onMessageReceived?.invoke(endpointId, signedPayload.message, isValid)
             }
         }
 
@@ -172,13 +176,17 @@ class NearbyConnectionsManager @Inject constructor(
         Log.d(TAG, "Stopped discovering")
     }
 
-    fun sendMessage(endpointId: String, message: String) {
-        val payload = Payload.fromBytes(message.toByteArray())
+    fun sendMessage(endpointId: String, message: String, alias: String) {
+        val signature = cryptoManager.sign(alias, message.toByteArray())
+        val signedPayload = SignedPayload(message, signature, alias)
+        val payload = Payload.fromBytes(Json.encodeToString(SignedPayload.serializer(), signedPayload).toByteArray())
         connectionsClient.sendPayload(endpointId, payload)
     }
 
-    fun broadcastMessage(message: String) {
-        val payload = Payload.fromBytes(message.toByteArray())
+    fun broadcastMessage(message: String, alias: String) {
+        val signature = cryptoManager.sign(alias, message.toByteArray())
+        val signedPayload = SignedPayload(message, signature, alias)
+        val payload = Payload.fromBytes(Json.encodeToString(SignedPayload.serializer(), signedPayload).toByteArray())
         connectionsClient.sendPayload(connectedEndpoints.keys.toList(), payload)
     }
 
