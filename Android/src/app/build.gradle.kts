@@ -24,9 +24,11 @@ plugins {
   alias(libs.plugins.protobuf)
   alias(libs.plugins.hilt.application)
   alias(libs.plugins.oss.licenses)
-  alias(libs.plugins.objectbox)
+  id("io.objectbox") version "3.7.0" apply false
   kotlin("kapt")
 }
+
+apply(plugin = "io.objectbox")
 
 android {
   namespace = "com.google.ai.edge.gallery"
