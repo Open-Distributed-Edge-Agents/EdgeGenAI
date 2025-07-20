@@ -34,6 +34,7 @@ import com.google.ai.edge.gallery.ui.common.chat.ChatMessageType
 import com.google.ai.edge.gallery.ui.common.chat.ChatMessageWarning
 import com.google.ai.edge.gallery.ui.common.chat.ChatSide
 import com.google.ai.edge.gallery.nearby.NearbyConnectionsManager
+import com.google.ai.edge.gallery.data.loadMissionDescription
 import com.google.ai.edge.gallery.ui.common.chat.ChatViewModel
 import com.google.ai.edge.gallery.ui.common.chat.Stat
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
@@ -117,6 +118,25 @@ open class LlmChatViewModelBase(
             nearbyConnectionsManager.startAdvertising("Commander")
         } else {
             nearbyConnectionsManager.startDiscovery(agentName)
+            indexMission(agentName, loadMissionDescription(getApplication(), agentName))
+        }
+    }
+
+    private fun indexMission(agentName: String, missionDescription: String) {
+        // Chunk the mission description
+        val chunks = missionDescription.chunked(512)
+        // Generate embeddings for each chunk
+        for (chunk in chunks) {
+            // TODO: Generate embedding for the chunk
+            val embedding = FloatArray(768)
+            // Create a mission object
+            val mission = Mission(
+                agentName = agentName,
+                description = chunk,
+                embedding = embedding
+            )
+            // Add the mission to the database
+            missionRepository.addMission(mission)
         }
     }
 
@@ -351,7 +371,8 @@ open class LlmChatViewModelBase(
 @HiltViewModel
 class LlmChatViewModel @Inject constructor(
     nearbyConnectionsManager: NearbyConnectionsManager,
-    private val systemPromptRepository: SystemPromptRepository
+    private val systemPromptRepository: SystemPromptRepository,
+    private val missionRepository: MissionRepository
 ) : LlmChatViewModelBase(curTask = TASK_LLM_CHAT, nearbyConnectionsManager)
 
 @HiltViewModel

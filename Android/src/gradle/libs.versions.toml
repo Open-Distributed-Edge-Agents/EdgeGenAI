@@ -87,6 +87,7 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 play-services-nearby = { module = "com.google.android.gms:play-services-nearby", version.ref = "playServicesNearby" }
 objectbox-android = { module = "io.objectbox:objectbox-android", version.ref = "objectbox" }
 objectbox-processor = { module = "io.objectbox:objectbox-processor", version.ref = "objectbox" }
+objectbox-vector = { module = "io.objectbox:objectbox-vector", version.ref = "objectbox" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -106,6 +106,7 @@ dependencies {
   implementation(libs.firebase.analytics)
   implementation(libs.play.services.nearby)
   implementation(libs.objectbox.android)
+  implementation(libs.objectbox.vector)
   kapt(libs.hilt.android.compiler)
   kapt(libs.objectbox.processor)
   testImplementation(libs.junit)
