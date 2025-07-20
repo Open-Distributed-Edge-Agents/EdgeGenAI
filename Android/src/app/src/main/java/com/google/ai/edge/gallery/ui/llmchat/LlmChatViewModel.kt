@@ -62,7 +62,7 @@ open class LlmChatViewModelBase(
     private var agentName: String? = null
 
     init {
-        nearbyConnectionsManager.onMessageReceived = { endpointId, message, isValid ->
+        nearbyConnectionsManager.onMessageReceived = { endpointId, message, isValid, recipient ->
             if (isValid) {
                 // Add message to chat history
                 val chatMessage = ChatMessageText(
@@ -71,6 +71,11 @@ open class LlmChatViewModelBase(
                     author = endpointId
                 )
                 addMessage(model = curModel.value!!, message = chatMessage)
+
+                if (recipient == "everyone" || recipient == agentName) {
+                    // Feed the message to the local model
+                    generateResponse(model = curModel.value!!, input = message, onError = {})
+                }
 
                 if (isCommander) {
                     // Broadcast message to other subordinates
@@ -144,16 +149,17 @@ open class LlmChatViewModelBase(
         nearbyConnectionsManager.stopAllEndpoints()
     }
 
-    fun sendMessage(message: String, isLocal: Boolean) {
+    fun sendMessage(message: String, isLocal: Boolean, recipient: String) {
         if (!isLocal) {
             val alias = if (isCommander) "Commander" else agentName
-            if (isCommander) {
+            if (recipient == "everyone") {
                 nearbyConnectionsManager.broadcastMessage(message, alias)
             } else {
                 nearbyConnectionsManager.sendMessage(
-                    nearbyConnectionsManager.getConnectedEndpoints().first(),
+                    nearbyConnectionsManager.getConnectedEndpoints().first { it == recipient },
                     message,
-                    alias
+                    alias,
+                    recipient
                 )
             }
         }

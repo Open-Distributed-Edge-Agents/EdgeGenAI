@@ -55,7 +55,7 @@ class NearbyConnectionsManager @Inject constructor(
 
     private val connectedEndpoints = mutableMapOf<String, String>()
 
-    var onMessageReceived: ((String, String, Boolean) -> Unit)? = null
+    var onMessageReceived: ((String, String, Boolean, String) -> Unit)? = null
     var onEndpointConnected: ((String) -> Unit)? = null
     var onEndpointDisconnected: ((String) -> Unit)? = null
 
@@ -66,7 +66,7 @@ class NearbyConnectionsManager @Inject constructor(
                 val signedPayload = Json.decodeFromString(SignedPayload.serializer(), String(receivedBytes))
                 val isSignatureValid = cryptoManager.verify(signedPayload.alias, signedPayload.message.toByteArray(), signedPayload.signature)
                 val isIdentityValid = connectedEndpoints[endpointId] == signedPayload.alias
-                onMessageReceived?.invoke(endpointId, signedPayload.message, isSignatureValid && isIdentityValid)
+                onMessageReceived?.invoke(endpointId, signedPayload.message, isSignatureValid && isIdentityValid, signedPayload.recipient)
             }
         }
 
@@ -184,16 +184,16 @@ class NearbyConnectionsManager @Inject constructor(
         Log.d(TAG, "Stopped discovering")
     }
 
-    fun sendMessage(endpointId: String, message: String, alias: String) {
+    fun sendMessage(endpointId: String, message: String, alias: String, recipient: String) {
         val signature = cryptoManager.sign(alias, message.toByteArray())
-        val signedPayload = SignedPayload(message, signature, alias)
+        val signedPayload = SignedPayload(message, signature, alias, recipient)
         val payload = Payload.fromBytes(Json.encodeToString(SignedPayload.serializer(), signedPayload).toByteArray())
         connectionsClient.sendPayload(endpointId, payload)
     }
 
     fun broadcastMessage(message: String, alias: String) {
         val signature = cryptoManager.sign(alias, message.toByteArray())
-        val signedPayload = SignedPayload(message, signature, alias)
+        val signedPayload = SignedPayload(message, signature, alias, "everyone")
         val payload = Payload.fromBytes(Json.encodeToString(SignedPayload.serializer(), signedPayload).toByteArray())
         connectionsClient.sendPayload(connectedEndpoints.keys.toList(), payload)
     }

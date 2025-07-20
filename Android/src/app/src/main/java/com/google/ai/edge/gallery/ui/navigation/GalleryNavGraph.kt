@@ -320,11 +320,7 @@ fun navigateToTaskScreen(
 ) {
   val modelName = model?.name ?: ""
   when (taskType) {
-    TaskType.LLM_CHAT -> navController.navigate("${LlmChatDestination.route}/${modelName}")
-    TaskType.LLM_ASK_IMAGE -> navController.navigate("${LlmAskImageDestination.route}/${modelName}")
-    TaskType.LLM_ASK_AUDIO -> navController.navigate("${LlmAskAudioDestination.route}/${modelName}")
-    TaskType.LLM_PROMPT_LAB ->
-      navController.navigate("${LlmSingleTurnDestination.route}/${modelName}")
+    TaskType.LLM_CHAT, TaskType.LLM_ASK_IMAGE, TaskType.LLM_ASK_AUDIO, TaskType.LLM_PROMPT_LAB  -> navController.navigate("nearby_role_selection")
     TaskType.NEARBY_CHAT -> navController.navigate("nearby_role_selection")
     TaskType.TEST_TASK_1 -> {}
     TaskType.TEST_TASK_2 -> {}

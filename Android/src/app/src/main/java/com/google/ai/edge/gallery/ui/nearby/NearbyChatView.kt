@@ -37,6 +37,7 @@ fun NearbyChatView(
     modifier: Modifier = Modifier
 ) {
     var isCommon by remember { mutableStateOf(false) }
+    var recipient by remember { mutableStateOf("everyone") }
 
     ChatView(
         task = viewModel.task,
@@ -44,7 +45,7 @@ fun NearbyChatView(
         onSendMessage = { model, messages ->
             for (message in messages) {
                 viewModel.addMessage(model = model, message = message)
-                viewModel.sendMessage(message.toString(), isCommon)
+                viewModel.sendMessage(message.toString(), isCommon, recipient)
             }
         },
         bottomContent = {
@@ -57,6 +58,7 @@ fun NearbyChatView(
                     onCheckedChange = { isCommon = it }
                 )
                 Text("Common question")
+                // Add a dropdown menu to select the recipient
             }
         }
     )

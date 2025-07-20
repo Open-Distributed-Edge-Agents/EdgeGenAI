@@ -22,5 +22,6 @@ import kotlinx.serialization.Serializable
 data class SignedPayload(
     val message: String,
     val signature: ByteArray,
-    val alias: String
+    val alias: String,
+    val recipient: String
 )
