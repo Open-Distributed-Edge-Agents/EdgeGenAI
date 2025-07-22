@@ -36,7 +36,7 @@ playServicesOssLicenses = "17.1.0"
 googleService = "4.4.3"
 firebaseBom = "33.16.0"
 playServicesNearby = "19.3.0"
-objectbox = "3.7.0"
+objectbox = "4.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -98,4 +98,4 @@ protobuf = {id = "com.google.protobuf", version.ref = "protobuf"}
 hilt-application = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 oss-licenses = {id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicenses"}
 google-services = { id = "com.google.gms.google-services", version.ref = "googleService" }
-objectbox = { id = "io.objectbox", version.ref = "objectbox" }
+objectbox = { id = "io.objectbox.objectbox-gradle-plugin", version.ref = "objectbox" }

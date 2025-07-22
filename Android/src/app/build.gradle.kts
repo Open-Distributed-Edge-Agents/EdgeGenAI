@@ -24,7 +24,7 @@ plugins {
   alias(libs.plugins.protobuf)
   alias(libs.plugins.hilt.application)
   alias(libs.plugins.oss.licenses)
-  alias(libs.plugins.objectbox)
+  // alias(libs.plugins.objectbox)
   kotlin("kapt")
 }
 
