@@ -86,8 +86,9 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 play-services-nearby = { module = "com.google.android.gms:play-services-nearby", version.ref = "playServicesNearby" }
 objectbox-android = { module = "io.objectbox:objectbox-android", version.ref = "objectbox" }
+objectbox-kotlin = { module = "io.objectbox:objectbox-kotlin", version.ref = "objectbox" }
+# objectbox-java = { module = "io.objectbox:objectbox-java", version.ref = "objectbox" }
 objectbox-processor = { module = "io.objectbox:objectbox-processor", version.ref = "objectbox" }
-objectbox-vector = { module = "io.objectbox:objectbox-vector", version.ref = "objectbox" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -98,4 +99,4 @@ protobuf = {id = "com.google.protobuf", version.ref = "protobuf"}
 hilt-application = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 oss-licenses = {id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicenses"}
 google-services = { id = "com.google.gms.google-services", version.ref = "googleService" }
-objectbox = { id = "io.objectbox.objectbox-gradle-plugin", version.ref = "objectbox" }
+objectbox = { id = "io.objectbox", version.ref = "objectbox" }
