@@ -29,11 +29,25 @@ class MissionRepository @Inject constructor() {
         missionBox.put(mission)
     }
 
-    fun getMission(agentName: String): Mission? {
-        return missionBox.query(Mission_.agentName.equal(agentName)).build().findFirst()
+    fun getAllMission(agentName: String): List<Mission> {
+        return missionBox.query(Mission_.agentName.equal(agentName)).build().find()
     }
 
-    fun searchMissions(embedding: FloatArray): List<Mission> {
-        return missionBox.query().findNeighbors(Mission_.embedding, embedding, 10)
+    fun getMission(agentName: String): Mission? {
+        return getAllMission(agentName).firstOrNull()
+    }
+
+    fun searchMissions(agentName: String, embedding: FloatArray, limit: Int): List<Mission> {
+        val query = missionBox.query(
+            Mission_.embedding.nearestNeighbors(embedding, limit)
+                .and(Mission_.agentName.equal(agentName))).build()
+
+        val resultsWithScores = query.findWithScores()
+        val results = mutableListOf<Mission>()
+        for (result in resultsWithScores) {
+            results.add(result.get())
+        }
+
+        return results
     }
 }

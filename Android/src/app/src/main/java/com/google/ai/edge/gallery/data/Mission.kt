@@ -17,14 +17,34 @@
 package com.google.ai.edge.gallery.data
 
 import io.objectbox.annotation.Entity
+import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
-import io.objectbox.annotation.Vector
+import io.objectbox.annotation.VectorDistanceType
 
 @Entity
 data class Mission(
     @Id var id: Long = 0,
     val agentName: String,
     val description: String,
-    @Vector(dimension = 768) val embedding: FloatArray
-)
+    @HnswIndex(dimensions = 768, distanceType = VectorDistanceType.COSINE)
+    val embedding: FloatArray
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Mission
+
+        if (agentName != other.agentName) return false
+        if (description != other.description) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = agentName.hashCode()
+        result = 31 * result + description.hashCode()
+        return result
+    }
+}
