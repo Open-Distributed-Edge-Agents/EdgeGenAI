@@ -218,7 +218,7 @@ class NearbyConnectionsManager @Inject constructor(
         if (sortedEndpoints.isNotEmpty() && sortedEndpoints.first() == getMyEndpointId()) {
             startAdvertising("Commander")
         } else {
-            startDiscovery()
+            startDiscovery(getMyEndpointId())  // TODO
         }
     }
 
@@ -232,10 +232,10 @@ class NearbyConnectionsManager @Inject constructor(
         // Otherwise, I will disconnect from the temporary commander and connect to the original one.
         if (isAdvertising) {
             stopAdvertising()
-            startDiscovery()
+            startDiscovery(getMyEndpointId())  // TODO
         } else {
             stopAllEndpoints()
-            startDiscovery()
+            startDiscovery(getMyEndpointId())  // TODO
         }
     }
 }
