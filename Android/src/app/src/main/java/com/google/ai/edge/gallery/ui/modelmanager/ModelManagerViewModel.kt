@@ -288,6 +288,7 @@ constructor(
         }
       }
       when (task.type) {
+        TaskType.NEARBY_CHAT,
         TaskType.LLM_CHAT,
         TaskType.LLM_ASK_IMAGE,
         TaskType.LLM_ASK_AUDIO,
@@ -305,6 +306,7 @@ constructor(
       model.cleanUpAfterInit = false
       Log.d(TAG, "Cleaning up model '${model.name}'...")
       when (task.type) {
+        TaskType.NEARBY_CHAT,
         TaskType.LLM_CHAT,
         TaskType.LLM_PROMPT_LAB,
         TaskType.LLM_ASK_IMAGE,
