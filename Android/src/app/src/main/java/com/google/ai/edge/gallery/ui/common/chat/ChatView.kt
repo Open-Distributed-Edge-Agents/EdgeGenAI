@@ -85,6 +85,7 @@ private const val TAG = "AGChatView"
 fun ChatView(
   task: Task,
   viewModel: ChatViewModel,
+  modelManagerViewModel: ModelManagerViewModel,
   onSendMessage: (Model, List<ChatMessage>) -> Unit,
   onRunAgainClicked: (Model, ChatMessage) -> Unit,
   onBenchmarkClicked: (Model, ChatMessage, Int, Int) -> Unit,
@@ -98,7 +99,7 @@ fun ChatView(
   bottomContent: @Composable () -> Unit = {}
 ) {
   val uiState by viewModel.uiState.collectAsState()
-  val modelManagerUiState by viewModel.modelManagerViewModel.uiState.collectAsState()
+  val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
   val selectedModel = modelManagerUiState.selectedModel
   var selectedImage by remember { mutableStateOf<Bitmap?>(null) }
   var showImageViewer by remember { mutableStateOf(false) }
