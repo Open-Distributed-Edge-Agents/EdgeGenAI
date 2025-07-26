@@ -1,0 +1,73 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:8904987025762660639",
+      "lastPropertyId": "4:7476748590421088182",
+      "name": "Mission",
+      "properties": [
+        {
+          "id": "1:4466308653343913902",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5213058753200353166",
+          "name": "agentName",
+          "type": 9
+        },
+        {
+          "id": "3:8115710319763687221",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "4:7476748590421088182",
+          "name": "embedding",
+          "indexId": "1:6591355027232620496",
+          "type": 28,
+          "flags": 8
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:5851076489166036791",
+      "lastPropertyId": "3:5886129787010143938",
+      "name": "SystemPrompt",
+      "properties": [
+        {
+          "id": "1:901480344699551907",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4923962571859088191",
+          "name": "role",
+          "type": 9
+        },
+        {
+          "id": "3:5886129787010143938",
+          "name": "prompt",
+          "type": 9
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "2:5851076489166036791",
+  "lastIndexId": "1:6591355027232620496",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

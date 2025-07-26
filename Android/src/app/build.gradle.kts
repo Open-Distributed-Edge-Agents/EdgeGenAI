@@ -24,6 +24,7 @@ plugins {
   alias(libs.plugins.protobuf)
   alias(libs.plugins.hilt.application)
   alias(libs.plugins.oss.licenses)
+  // alias(libs.plugins.objectbox)
   kotlin("kapt")
 }
 
@@ -103,7 +104,13 @@ dependencies {
   implementation(libs.play.services.oss.licenses)
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.analytics)
+  implementation(libs.play.services.nearby)
+  implementation(libs.objectbox.android)
+  implementation(libs.objectbox.kotlin)
+  // implementation(libs.objectbox.java)
+  // implementation(libs.objectbox.vector)
   kapt(libs.hilt.android.compiler)
+  kapt(libs.objectbox.processor)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)

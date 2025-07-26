@@ -31,6 +31,9 @@ pluginManagement {
       if (requested.id.id == "com.google.android.gms.oss-licenses-plugin") {
         useModule("com.google.android.gms:oss-licenses-plugin:0.10.6")
       }
+      if (requested.id.id == "io.objectbox.plugin") {
+        useModule("io.objectbox:objectbox-gradle-plugin:${requested.version}")
+      }
     }
   }
 }

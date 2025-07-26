@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-  alias(libs.plugins.android.application) apply false
-  alias(libs.plugins.google.services) apply false
-  alias(libs.plugins.kotlin.android) apply false
-  alias(libs.plugins.kotlin.compose) apply false
-  alias(libs.plugins.hilt.application) apply false
-}
+package com.google.ai.edge.gallery.data
 
-//buildscript {
-//  val objectBoxVersion = libs.versions.objectbox.get()
-//  repositories {
-//    mavenCentral()
-//  }
-//  dependencies {
-//    classpath("io.objectbox:objectbox-gradle-plugin:$objectBoxVersion")
-//  }
-//}
+import io.objectbox.kotlin.boxFor
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class SystemPromptRepository @Inject constructor() {
+    private val systemPromptBox = ObjectBox.store.boxFor<SystemPrompt>()
+
+    fun getSystemPrompt(role: String): SystemPrompt? {
+        return systemPromptBox.query(SystemPrompt_.role.equal(role)).build().findFirst()
+    }
+
+    fun updateSystemPrompt(systemPrompt: SystemPrompt) {
+        systemPromptBox.put(systemPrompt)
+    }
+}

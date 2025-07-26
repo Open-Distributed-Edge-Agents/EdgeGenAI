@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-  alias(libs.plugins.android.application) apply false
-  alias(libs.plugins.google.services) apply false
-  alias(libs.plugins.kotlin.android) apply false
-  alias(libs.plugins.kotlin.compose) apply false
-  alias(libs.plugins.hilt.application) apply false
-}
+package com.google.ai.edge.gallery.nearby
 
-//buildscript {
-//  val objectBoxVersion = libs.versions.objectbox.get()
-//  repositories {
-//    mavenCentral()
-//  }
-//  dependencies {
-//    classpath("io.objectbox:objectbox-gradle-plugin:$objectBoxVersion")
-//  }
-//}
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class SignedPayload(
+    val message: String,
+    val signature: ByteArray,
+    val alias: String,
+    val recipient: String
+)

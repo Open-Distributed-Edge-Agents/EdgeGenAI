@@ -35,6 +35,8 @@ ossLicenses = "0.10.6"
 playServicesOssLicenses = "17.1.0"
 googleService = "4.4.3"
 firebaseBom = "33.16.0"
+playServicesNearby = "19.3.0"
+objectbox = "4.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -82,6 +84,11 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 # When using the Firebase BoM, you don't specify versions in Firebase
 # library dependencies.
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+play-services-nearby = { module = "com.google.android.gms:play-services-nearby", version.ref = "playServicesNearby" }
+objectbox-android = { module = "io.objectbox:objectbox-android", version.ref = "objectbox" }
+objectbox-kotlin = { module = "io.objectbox:objectbox-kotlin", version.ref = "objectbox" }
+# objectbox-java = { module = "io.objectbox:objectbox-java", version.ref = "objectbox" }
+objectbox-processor = { module = "io.objectbox:objectbox-processor", version.ref = "objectbox" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -92,3 +99,4 @@ protobuf = {id = "com.google.protobuf", version.ref = "protobuf"}
 hilt-application = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 oss-licenses = {id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicenses"}
 google-services = { id = "com.google.gms.google-services", version.ref = "googleService" }
+objectbox = { id = "io.objectbox", version.ref = "objectbox" }

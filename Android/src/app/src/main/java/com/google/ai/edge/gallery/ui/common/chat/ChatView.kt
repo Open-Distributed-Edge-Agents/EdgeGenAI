@@ -96,6 +96,7 @@ fun ChatView(
   onStopButtonClicked: (Model) -> Unit = {},
   chatInputType: ChatInputType = ChatInputType.TEXT,
   showStopButtonInInputWhenInProgress: Boolean = false,
+  bottomContent: @Composable () -> Unit = {}
 ) {
   val uiState by viewModel.uiState.collectAsState()
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -244,6 +245,7 @@ fun ChatView(
               modifier = Modifier.weight(1f).graphicsLayer { alpha = curAlpha },
               chatInputType = chatInputType,
               showStopButtonInInputWhenInProgress = showStopButtonInInputWhenInProgress,
+              bottomContent = bottomContent
             )
           }
         }
