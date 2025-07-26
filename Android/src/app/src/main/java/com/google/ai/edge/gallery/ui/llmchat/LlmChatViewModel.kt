@@ -21,7 +21,11 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.ai.edge.gallery.data.ConfigKey
+import com.google.ai.edge.gallery.data.Mission
+import com.google.ai.edge.gallery.data.MissionRepository
 import com.google.ai.edge.gallery.data.Model
+import com.google.ai.edge.gallery.data.SystemPromptRepository
+import com.google.ai.edge.gallery.data.TASK_NEARBY_CHAT
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_AUDIO
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_IMAGE
 import com.google.ai.edge.gallery.data.TASK_LLM_CHAT
@@ -39,9 +43,12 @@ import com.google.ai.edge.gallery.ui.common.chat.ChatViewModel
 import com.google.ai.edge.gallery.ui.common.chat.Stat
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 private const val TAG = "AGLlmChatViewModel"
@@ -55,38 +62,46 @@ private val STATS =
 
 open class LlmChatViewModelBase(
     val curTask: Task,
-    private val nearbyConnectionsManager: NearbyConnectionsManager
+    private val modelManagerViewModel: ModelManagerViewModel,
+    private val nearbyConnectionsManager: NearbyConnectionsManager,
+    private val systemPromptRepository: SystemPromptRepository,
+    private val missionRepository: MissionRepository,
+    @ApplicationContext private val context: Context,
 ) : ChatViewModel(task = curTask) {
 
+    val curModel = modelManagerViewModel.uiState.map { it.selectedModel }
     private var isCommander = false
     private var agentName: String? = null
+    private var applicationContext: Context = context
 
     init {
         nearbyConnectionsManager.onMessageReceived = { endpointId, message, isValid, recipient ->
-            if (isValid) {
-                // Add message to chat history
-                val chatMessage = ChatMessageText(
-                    content = message,
-                    side = ChatSide.AGENT,
-                    author = endpointId
-                )
-                addMessage(model = curModel.value!!, message = chatMessage)
+            viewModelScope.launch {
+                if (isValid) {
+                    // Add message to chat history
+                    val chatMessage = ChatMessageText(
+                        content = message,
+                        side = ChatSide.AGENT,
+                        author = endpointId
+                    )
+                    addMessage(model = curModel.first(), message = chatMessage)
 
-                if (recipient == "everyone" || recipient == agentName) {
-                    // Feed the message to the local model
-                    generateResponse(model = curModel.value!!, input = message, onError = {})
-                }
+                    if (recipient == "everyone" || recipient == agentName) {
+                        // Feed the message to the local model
+                        generateResponse(model = curModel.first(), input = message, onError = {})
+                    }
 
-                if (isCommander) {
-                    // Broadcast message to other subordinates
-                    nearbyConnectionsManager.broadcastMessage(message, "Commander")
+                    if (isCommander) {
+                        // Broadcast message to other subordinates
+                        nearbyConnectionsManager.broadcastMessage(message, "Commander")
+                    }
+                } else {
+                    // Add a warning message to the chat
+                    val chatMessage = ChatMessageWarning(
+                        content = "Invalid message from $endpointId"
+                    )
+                    addMessage(model = curModel.first(), message = chatMessage)
                 }
-            } else {
-                // Add a warning message to the chat
-                val chatMessage = ChatMessageWarning(
-                    content = "Invalid message from $endpointId"
-                )
-                addMessage(model = curModel.value!!, message = chatMessage)
             }
         }
 
@@ -98,16 +113,19 @@ open class LlmChatViewModelBase(
         }
 
         nearbyConnectionsManager.onImpersonationDetected = { endpointName ->
-            val chatMessage = ChatMessageWarning(
-                content = "Impersonation detected: $endpointName"
-            )
-            addMessage(model = curModel.value!!, message = chatMessage)
+            viewModelScope.launch {
+                val chatMessage = ChatMessageWarning(
+                    content = "Impersonation detected: $endpointName"
+                )
+                addMessage(model = curModel.first(), message = chatMessage)
+            }
         }
     }
 
     fun startNearbyConnections(isCommander: Boolean, agentName: String?) {
         this.isCommander = isCommander
         this.agentName = agentName
+        val nonNullAgentName = agentName ?: "N/A"
         val role = if (isCommander) "Commander" else "Agent"
         val systemPrompt = systemPromptRepository.getSystemPrompt(role)
         if (systemPrompt != null) {
@@ -123,7 +141,7 @@ open class LlmChatViewModelBase(
             nearbyConnectionsManager.startAdvertising("Commander")
         } else {
             nearbyConnectionsManager.startDiscovery(agentName)
-            indexMission(agentName, loadMissionDescription(getApplication(), agentName))
+            indexMission(nonNullAgentName, loadMissionDescription(applicationContext, nonNullAgentName))
         }
     }
 
@@ -151,7 +169,7 @@ open class LlmChatViewModelBase(
 
     fun sendMessage(message: String, isLocal: Boolean, recipient: String) {
         if (!isLocal) {
-            val alias = if (isCommander) "Commander" else agentName
+            val alias = if (isCommander) "Commander" else agentName ?: "N/A"
             if (recipient == "everyone") {
                 nearbyConnectionsManager.broadcastMessage(message, alias)
             } else {
@@ -168,9 +186,9 @@ open class LlmChatViewModelBase(
     fun generateResponse(
         model: Model,
         input: String,
-    images: List<Bitmap> = listOf(),
-    audioMessages: List<ChatMessageAudioClip> = listOf(),
-    onError: () -> Unit,
+        images: List<Bitmap> = listOf(),
+        audioMessages: List<ChatMessageAudioClip> = listOf(),
+        onError: () -> Unit,
   ) {
     val accelerator = model.getStringConfigValue(key = ConfigKey.ACCELERATOR, defaultValue = "")
     viewModelScope.launch(Dispatchers.Default) {
@@ -375,18 +393,65 @@ open class LlmChatViewModelBase(
 }
 
 @HiltViewModel
-class LlmChatViewModel @Inject constructor(
+class LlmGroupChatViewModel @Inject constructor(
+    modelManagerViewModel: ModelManagerViewModel,
     nearbyConnectionsManager: NearbyConnectionsManager,
-    private val systemPromptRepository: SystemPromptRepository,
-    private val missionRepository: MissionRepository
-) : LlmChatViewModelBase(curTask = TASK_LLM_CHAT, nearbyConnectionsManager)
+    systemPromptRepository: SystemPromptRepository,
+    missionRepository: MissionRepository,
+    @ApplicationContext private val context: Context,
+) : LlmChatViewModelBase(
+    curTask = TASK_NEARBY_CHAT,
+    modelManagerViewModel,
+    nearbyConnectionsManager,
+    systemPromptRepository,
+    missionRepository,
+    context
+)
+
+@HiltViewModel
+class LlmChatViewModel @Inject constructor(
+    modelManagerViewModel: ModelManagerViewModel,
+    nearbyConnectionsManager: NearbyConnectionsManager,
+    systemPromptRepository: SystemPromptRepository,
+    missionRepository: MissionRepository,
+    @ApplicationContext private val context: Context,
+) : LlmChatViewModelBase(
+    curTask = TASK_LLM_CHAT,
+    modelManagerViewModel,
+    nearbyConnectionsManager,
+    systemPromptRepository,
+    missionRepository,
+    context
+)
 
 @HiltViewModel
 class LlmAskImageViewModel @Inject constructor(
-    nearbyConnectionsManager: NearbyConnectionsManager
-) : LlmChatViewModelBase(curTask = TASK_LLM_ASK_IMAGE, nearbyConnectionsManager)
+    modelManagerViewModel: ModelManagerViewModel,
+    nearbyConnectionsManager: NearbyConnectionsManager,
+    systemPromptRepository: SystemPromptRepository,
+    missionRepository: MissionRepository,
+    @ApplicationContext private val context: Context,
+) : LlmChatViewModelBase(
+    curTask = TASK_LLM_ASK_IMAGE,
+    modelManagerViewModel,
+    nearbyConnectionsManager,
+    systemPromptRepository,
+    missionRepository,
+    context
+)
 
 @HiltViewModel
 class LlmAskAudioViewModel @Inject constructor(
-    nearbyConnectionsManager: NearbyConnectionsManager
-) : LlmChatViewModelBase(curTask = TASK_LLM_ASK_AUDIO, nearbyConnectionsManager)
+    modelManagerViewModel: ModelManagerViewModel,
+    nearbyConnectionsManager: NearbyConnectionsManager,
+    systemPromptRepository: SystemPromptRepository,
+    missionRepository: MissionRepository,
+    @ApplicationContext private val context: Context,
+) : LlmChatViewModelBase(
+    curTask = TASK_LLM_ASK_AUDIO,
+    modelManagerViewModel,
+    nearbyConnectionsManager,
+    systemPromptRepository,
+    missionRepository,
+    context
+)

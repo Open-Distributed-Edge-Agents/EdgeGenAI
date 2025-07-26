@@ -288,7 +288,9 @@ fun GalleryNavHost(
         viewModel.startNearbyConnections(isCommander, agentName)
 
         NearbyChatView(
-            viewModel = viewModel
+            viewModel = viewModel,
+            modelManagerViewModel = modelManagerViewModel,
+            navigateUp = { navController.navigateUp() }
         )
     }
   }

@@ -30,24 +30,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatViewModel
 import com.google.ai.edge.gallery.ui.common.chat.ChatView
+import com.google.ai.edge.gallery.ui.common.chat.ChatMessageText
+import com.google.ai.edge.gallery.ui.common.chat.ChatViewModel
+import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 
 @Composable
 fun NearbyChatView(
+    modelManagerViewModel: ModelManagerViewModel,
     viewModel: LlmChatViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigateUp: () -> Unit
 ) {
     var isCommon by remember { mutableStateOf(false) }
     var recipient by remember { mutableStateOf("everyone") }
 
     ChatView(
-        task = viewModel.task,
-        viewModel = viewModel,
+        task = viewModel.curTask,
+        modelManagerViewModel = modelManagerViewModel,
+        chatViewModel = viewModel as ChatViewModel,
         onSendMessage = { model, messages ->
             for (message in messages) {
                 viewModel.addMessage(model = model, message = message)
-                viewModel.sendMessage(message.toString(), isCommon, recipient)
+                viewModel.sendMessage(message.content, isCommon, recipient)
             }
         },
+        onRunAgainClicked = { model, message ->
+            viewModel.runAgain(model, message, {})
+        },
+        onBenchmarkClicked = { model, message ->
+            // No-op
+        },
+        navigateUp = navigateUp,
         bottomContent = {
             Row(
                 modifier = Modifier.padding(start = 16.dp),
