@@ -358,7 +358,7 @@ private fun TaskList(
   val uriHandler = LocalUriHandler.current
 
   val introText = buildAnnotatedString {
-    append("Welcome to Google AI Edge Gallery! Explore a world of amazing on-device models from ")
+    append("Welcome to Distributed Edge Agents! Download on-device models from ")
     // TODO: Consolidate the link clicking logic into ui/common/ClickableLink.kt.
     withLink(
       link =

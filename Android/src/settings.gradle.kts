@@ -47,6 +47,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "AI Edge Gallery"
+rootProject.name = "Distributed Edge Agents"
 
 include(":app")
