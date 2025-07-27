@@ -64,16 +64,27 @@ fun NearbyChatView(
         },
         navigateUp = navigateUp,
         bottomContent = {
-            Row(
-                modifier = Modifier.padding(start = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = isCommon,
-                    onCheckedChange = { isCommon = it }
-                )
-                Text("Common question")
-                // Add a dropdown menu to select the recipient
+            val imageUri by viewModel.imageUri.collectAsState()
+
+            Column {
+                imageUri?.let {
+                    Image(
+                        painter = rememberAsyncImagePainter(it),
+                        contentDescription = null,
+                        modifier = Modifier
+                    )
+                }
+                Row(
+                    modifier = Modifier.padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isCommon,
+                        onCheckedChange = { isCommon = it }
+                    )
+                    Text("Common question")
+                    // Add a dropdown menu to select the recipient
+                }
             }
         }
     )

@@ -129,7 +129,14 @@ open class LlmChatViewModelBase(
         }
     }
 
-    fun startNearbyConnections(isCommander: Boolean, agentName: String?) {
+private val _imageUri = mutableStateOf<Uri?>(null)
+val imageUri: State<Uri?> = _imageUri
+
+fun setImageUri(uri: Uri) {
+    _imageUri.value = uri
+}
+
+fun startNearbyConnections(isCommander: Boolean, agentName: String?, imageUri: Uri?) {
         this.isCommander = isCommander
         this.agentName = agentName
         val nonNullAgentName = agentName ?: "N/A"
