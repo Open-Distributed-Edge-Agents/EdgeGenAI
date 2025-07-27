@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
@@ -197,6 +198,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmChatViewModel = hiltViewModel(backStackEntry)
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_CHAT)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -237,6 +240,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmAskImageViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_ASK_IMAGE)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -257,6 +262,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmAskAudioViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_ASK_AUDIO)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
