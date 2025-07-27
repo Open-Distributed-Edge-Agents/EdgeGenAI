@@ -22,13 +22,3 @@ plugins {
   alias(libs.plugins.kotlin.compose) apply false
   alias(libs.plugins.hilt.application) apply false
 }
-
-//buildscript {
-//  val objectBoxVersion = libs.versions.objectbox.get()
-//  repositories {
-//    mavenCentral()
-//  }
-//  dependencies {
-//    classpath("io.objectbox:objectbox-gradle-plugin:$objectBoxVersion")
-//  }
-//}
