@@ -47,17 +47,19 @@ fun NearbyChatView(
     ChatView(
         task = viewModel.curTask,
         modelManagerViewModel = modelManagerViewModel,
-        chatViewModel = viewModel as ChatViewModel,
+        viewModel = viewModel as ChatViewModel,
         onSendMessage = { model, messages ->
             for (message in messages) {
                 viewModel.addMessage(model = model, message = message)
-                viewModel.sendMessage(message.content, isCommon, recipient)
+                if (message is ChatMessageText) {
+                    viewModel.sendMessage(message.content, isCommon, recipient)
+                }
             }
         },
         onRunAgainClicked = { model, message ->
-            viewModel.runAgain(model, message, {})
+            if (message is ChatMessageText) viewModel.runAgain(model, message, {})
         },
-        onBenchmarkClicked = { model, message ->
+        onBenchmarkClicked = { model, message, _, _ ->
             // No-op
         },
         navigateUp = navigateUp,
