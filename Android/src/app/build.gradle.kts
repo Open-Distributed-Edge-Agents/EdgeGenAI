@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   alias(libs.plugins.android.application)
@@ -58,10 +59,6 @@ android {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
   }
-  kotlinOptions {
-    jvmTarget = "21"
-    freeCompilerArgs += "-Xcontext-receivers"
-  }
   buildFeatures {
     compose = true
     buildConfig = true
@@ -69,6 +66,10 @@ android {
 }
 
 kotlin {
+  compilerOptions {
+    jvmTarget = JvmTarget.JVM_21
+    freeCompilerArgs.add("-Xcontext-receivers")
+  }
   jvmToolchain(21)
 }
 
