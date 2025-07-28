@@ -40,6 +40,7 @@ import com.google.ai.edge.gallery.data.TASK_LLM_ASK_AUDIO
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_IMAGE
 import com.google.ai.edge.gallery.data.TASK_LLM_CHAT
 import com.google.ai.edge.gallery.data.TASK_LLM_PROMPT_LAB
+import com.google.ai.edge.gallery.data.TASK_NEARBY_CHAT
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.data.TaskType
 import com.google.ai.edge.gallery.data.createLlmChatConfigs
@@ -74,7 +75,7 @@ import net.openid.appauth.ResponseTypeValues
 private const val TAG = "AGModelManagerViewModel"
 private const val TEXT_INPUT_HISTORY_MAX_SIZE = 50
 private const val MODEL_ALLOWLIST_URL =
-  "https://raw.githubusercontent.com/google-ai-edge/gallery/refs/heads/main/model_allowlist.json"
+  "https://raw.githubusercontent.com/Open-Distributed-Edge-Agents/EdgeGenAI/refs/heads/nearby-connections/model_allowlist.json"
 private const val MODEL_ALLOWLIST_FILENAME = "model_allowlist.json"
 
 data class ModelInitializationStatus(
@@ -671,6 +672,7 @@ constructor(
         TASK_LLM_PROMPT_LAB.models.clear()
         TASK_LLM_ASK_IMAGE.models.clear()
         TASK_LLM_ASK_AUDIO.models.clear()
+        TASK_NEARBY_CHAT.models.clear()
         for (allowedModel in modelAllowlist.models) {
           if (allowedModel.disabled == true) {
             continue
@@ -688,6 +690,9 @@ constructor(
           }
           if (allowedModel.taskTypes.contains(TASK_LLM_ASK_AUDIO.type.id)) {
             TASK_LLM_ASK_AUDIO.models.add(model)
+          }
+          if (allowedModel.taskTypes.contains(TASK_NEARBY_CHAT.type.id)) {
+            TASK_NEARBY_CHAT.models.add(model)
           }
         }
 

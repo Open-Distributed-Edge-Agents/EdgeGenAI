@@ -16,7 +16,7 @@
         "maxTokens": 4096,
         "accelerators": "cpu,gpu"
       },
-      "taskTypes": ["llm_chat", "llm_prompt_lab", "llm_ask_image"]
+      "taskTypes": ["llm_chat", "llm_prompt_lab", "llm_ask_image", "nearby_chat"]
     },
     {
       "name": "Gemma-3n-E4B-it-int4",
@@ -34,7 +34,7 @@
         "maxTokens": 4096,
         "accelerators": "cpu,gpu"
       },
-      "taskTypes": ["llm_chat", "llm_prompt_lab", "llm_ask_image"]
+      "taskTypes": ["llm_chat", "llm_prompt_lab", "llm_ask_image", "nearby_chat"]
     },
     {
       "name": "Gemma3-1B-IT q4",
