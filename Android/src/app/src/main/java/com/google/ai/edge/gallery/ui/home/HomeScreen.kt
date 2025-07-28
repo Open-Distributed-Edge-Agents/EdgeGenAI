@@ -503,3 +503,14 @@ fun getFileName(context: Context, uri: Uri): String? {
   }
   return null
 }
+
+// @Preview
+// @Composable
+// fun HomeScreenPreview() {
+//   GalleryTheme {
+//     HomeScreen(
+//       modelManagerViewModel = PreviewModelManagerViewModel(context = LocalContext.current),
+//       navigateToTaskScreen = {},
+//     )
+//   }
+// }
