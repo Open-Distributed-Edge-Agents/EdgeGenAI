@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,41 +48,43 @@ fun NearbyRoleSelectionScreen(
     var missionDescription by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = { onRoleSelected(true, null) }) {
-            Text("Commander")
-        }
-        (1..5).forEach { agentNumber ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable {
-                    selectedAgent = agentNumber
-                    missionDescription = loadMissionDescription(context, "Agent$agentNumber")
-                }
-            ) {
-                Checkbox(
-                    checked = selectedAgent == agentNumber,
-                    onCheckedChange = {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(onClick = { onRoleSelected(true, null) }) {
+                Text("Commander")
+            }
+            (1..5).forEach { agentNumber ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable {
                         selectedAgent = agentNumber
                         missionDescription = loadMissionDescription(context, "Agent$agentNumber")
                     }
-                )
-                Text("Agent $agentNumber")
+                ) {
+                    Checkbox(
+                        checked = selectedAgent == agentNumber,
+                        onCheckedChange = {
+                            selectedAgent = agentNumber
+                            missionDescription = loadMissionDescription(context, "Agent$agentNumber")
+                        }
+                    )
+                    Text("Agent $agentNumber")
+                }
             }
-        }
-        Button(
-            onClick = { onRoleSelected(false, "Agent$selectedAgent") },
-            enabled = selectedAgent != null
-        ) {
-            Text("Subordinate")
-        }
+            Button(
+                onClick = { onRoleSelected(false, "Agent$selectedAgent") },
+                enabled = selectedAgent != null
+            ) {
+                Text("Subordinate")
+            }
 
-        missionDescription?.let {
-            MissionDetails(missionDescription = it)
+            missionDescription?.let {
+                MissionDetails(missionDescription = it)
+            }
         }
     }
 }
