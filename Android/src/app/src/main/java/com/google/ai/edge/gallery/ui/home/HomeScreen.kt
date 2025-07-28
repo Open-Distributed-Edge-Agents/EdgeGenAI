@@ -90,26 +90,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.bundleOf
 import com.google.ai.edge.gallery.GalleryTopAppBar
 import com.google.ai.edge.gallery.R
 import com.google.ai.edge.gallery.data.AppBarAction
 import com.google.ai.edge.gallery.data.AppBarActionType
 import com.google.ai.edge.gallery.data.Task
-import com.google.ai.edge.gallery.firebaseAnalytics
 import com.google.ai.edge.gallery.proto.ImportedModel
 import com.google.ai.edge.gallery.ui.common.TaskIcon
 import com.google.ai.edge.gallery.ui.common.TosSheet
@@ -353,30 +343,6 @@ private fun TaskList(
   val screenWidthDp = remember { with(density) { windowInfo.containerSize.width.toDp() } }
   val screenHeightDp = remember { with(density) { windowInfo.containerSize.height.toDp() } }
   val sizeFraction = remember { ((screenWidthDp - 360.dp) / (410.dp - 360.dp)).coerceIn(0f, 1f) }
-  val linkColor = MaterialTheme.customColors.linkColor
-  val url = "https://huggingface.co/litert-community"
-  val uriHandler = LocalUriHandler.current
-
-  val introText = buildAnnotatedString {
-    append("Welcome to Distributed Edge Agents! Download on-device models from ")
-    // TODO: Consolidate the link clicking logic into ui/common/ClickableLink.kt.
-    withLink(
-      link =
-        LinkAnnotation.Url(
-          url = url,
-          styles =
-            TextLinkStyles(
-              style = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)
-            ),
-          linkInteractionListener = { _ ->
-            firebaseAnalytics?.logEvent("resource_link_click", bundleOf("link_destination" to url))
-            uriHandler.openUri(url)
-          },
-        )
-    ) {
-      append("LiteRT community")
-    }
-  }
 
   Box(modifier = modifier.fillMaxSize()) {
     LazyVerticalGrid(
@@ -388,16 +354,6 @@ private fun TaskList(
     ) {
       // New rel
       item(key = "newReleaseNotification", span = { GridItemSpan(2) }) { NewReleaseNotification() }
-
-      // Headline.
-      item(key = "headline", span = { GridItemSpan(2) }) {
-        Text(
-          introText,
-          textAlign = TextAlign.Center,
-          style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-          modifier = Modifier.padding(bottom = 20.dp).padding(horizontal = 16.dp),
-        )
-      }
 
       if (loadingModelAllowlist) {
         item(key = "loading", span = { GridItemSpan(2) }) {
@@ -415,15 +371,6 @@ private fun TaskList(
         }
       } else {
         // LLM Cards.
-        item(key = "llmCardsHeader", span = { GridItemSpan(2) }) {
-          Text(
-            "Example LLM Use Cases",
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp),
-          )
-        }
-
         items(tasks) { task ->
           TaskCard(
             sizeFraction = sizeFraction,
@@ -556,14 +503,3 @@ fun getFileName(context: Context, uri: Uri): String? {
   }
   return null
 }
-
-// @Preview
-// @Composable
-// fun HomeScreenPreview() {
-//   GalleryTheme {
-//     HomeScreen(
-//       modelManagerViewModel = PreviewModelManagerViewModel(context = LocalContext.current),
-//       navigateToTaskScreen = {},
-//     )
-//   }
-// }
