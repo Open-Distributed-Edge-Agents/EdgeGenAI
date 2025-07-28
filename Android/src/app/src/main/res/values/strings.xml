@@ -31,7 +31,7 @@
     <string name="chat_textinput_placeholder" translatable="false">Type message…</string>
     <string name="chat_you" translatable="false">You</string>
     <string name="chat_llm_agent_name" translatable="false">LLM</string>
-    <string name="chat_generic_agent_name" translatable="false">Model</string>
+    <string name="chat_generic_agent_name" translatable="false">Agent</string>
     <string name="chat_generic_result_name" translatable="false">Result</string>
     <string name="model_not_downloaded_msg" translatable="false">Model not downloaded yet</string>
     <string name="model_is_initializing_msg" translatable="false">Initializing model…</string>
