@@ -24,4 +24,26 @@ data class SignedPayload(
     val signature: ByteArray,
     val alias: String,
     val recipient: String
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SignedPayload
+
+        if (message != other.message) return false
+        if (!signature.contentEquals(other.signature)) return false
+        if (alias != other.alias) return false
+        if (recipient != other.recipient) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = message.hashCode()
+        result = 31 * result + signature.contentHashCode()
+        result = 31 * result + alias.hashCode()
+        result = 31 * result + recipient.hashCode()
+        return result
+    }
+}
