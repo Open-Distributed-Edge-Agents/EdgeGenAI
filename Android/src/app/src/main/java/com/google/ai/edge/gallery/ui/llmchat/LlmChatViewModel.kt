@@ -64,7 +64,7 @@ private val STATS =
   )
 
 open class LlmChatViewModelBase(
-    val curTask: Task,
+    var curTask: Task,
     private val nearbyConnectionsManager: NearbyConnectionsManager,
     private val systemPromptRepository: SystemPromptRepository,
     private val missionRepository: MissionRepository,
@@ -130,6 +130,7 @@ open class LlmChatViewModelBase(
     }
 
     fun startNearbyConnections(isCommander: Boolean, agentName: String?) {
+        curTask = TASK_NEARBY_CHAT
         this.isCommander = isCommander
         this.agentName = agentName
         val nonNullAgentName = agentName ?: "N/A"
