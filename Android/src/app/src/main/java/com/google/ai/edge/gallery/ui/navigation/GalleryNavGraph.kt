@@ -73,7 +73,6 @@ import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnViewModel
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManager
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import com.google.ai.edge.gallery.ui.nearby.NearbyChatView
-import com.google.ai.edge.gallery.ui.nearby.NearbyRoleSelectionScreen
 
 private const val TAG = "AGGalleryNavGraph"
 private const val ROUTE_PLACEHOLDER = "placeholder"
@@ -167,11 +166,13 @@ fun GalleryNavHost(
       ModelManager(
         viewModel = modelManagerViewModel,
         task = curPickedTask,
-        onModelClicked = { model ->
+        onModelClicked = { model, isCommander, agentName ->
           navigateToTaskScreen(
             navController = navController,
             taskType = curPickedTask.type,
             model = model,
+            isCommander = isCommander,
+            agentName = agentName
           )
         },
         navigateUp = { showModelManager = false },
@@ -276,11 +277,7 @@ fun GalleryNavHost(
       }
     }
 
-    composable(route = "nearby_role_selection") {
-      NearbyRoleSelectionScreen(onRoleSelected = { isCommander, agentName ->
-        navController.navigate("nearby_chat/$isCommander/$agentName")
-      })
-    }
+    
 
     composable(
         route = "nearby_chat/{isCommander}/{agentName}",
@@ -316,6 +313,8 @@ fun GalleryNavHost(
           navController = navController,
           taskType = TaskType.LLM_CHAT,
           model = model,
+          isCommander = false,
+          agentName = null
         )
       }
     }
@@ -326,11 +325,17 @@ fun navigateToTaskScreen(
   navController: NavHostController,
   taskType: TaskType,
   model: Model? = null,
+  isCommander: Boolean,
+  agentName: String?
 ) {
   val modelName = model?.name ?: ""
   when (taskType) {
-    TaskType.LLM_CHAT, TaskType.LLM_ASK_IMAGE, TaskType.LLM_ASK_AUDIO, TaskType.LLM_PROMPT_LAB  -> navController.navigate("nearby_role_selection")
-    TaskType.NEARBY_CHAT -> navController.navigate("nearby_role_selection")
+    TaskType.LLM_CHAT -> navController.navigate("${LlmChatDestination.route}/${modelName}")
+    TaskType.LLM_ASK_IMAGE -> navController.navigate("${LlmAskImageDestination.route}/${modelName}")
+    TaskType.LLM_ASK_AUDIO -> navController.navigate("${LlmAskAudioDestination.route}/${modelName}")
+    TaskType.LLM_PROMPT_LAB ->
+      navController.navigate("${LlmSingleTurnDestination.route}/${modelName}")
+    TaskType.NEARBY_CHAT -> navController.navigate("nearby_chat/$isCommander/$agentName")
     TaskType.TEST_TASK_1 -> {}
     TaskType.TEST_TASK_2 -> {}
   }
