@@ -84,18 +84,18 @@ fun TosSheet(onTosAccepted: () -> Unit, viewingMode: Boolean = false) {
       Column(modifier = Modifier.verticalScroll(rememberScrollState()).weight(1f, fill = false)) {
         // Short content.
         MarkdownText(
-          "By using Google AI Edge Gallery, you accept (1) the [Google Terms of Service](https://policies.google.com/terms), and (2) Google AI Edge Gallery App Terms of Service below.",
+          "By using Distributed Edge Agents, you accept (1) the [Google Terms of Service](https://policies.google.com/terms), and (2) Distributed Edge Agents App Terms of Service below.",
           modifier = Modifier.padding(top = 16.dp),
         )
 
         // Long content.
         if (viewFullTerms) {
           MarkdownText(
-            "In addition, your use of any Gemma models in the Google AI Edge Gallery app is governed by the [Gemma Terms of Use](https://ai.google.dev/gemma/terms), including the [Gemma Prohibited Use Policy](https://ai.google.dev/gemma/prohibited_use_policy). By using, reproducing, modifying, distributing, performing, or displaying any portion or element of Gemma or any Gemma model derivatives, you agree to be bound by [those terms](https://ai.google.dev/gemma/terms) and that policy.\n" +
+            "In addition, your use of any Gemma models in the Distributed Edge Agents app is governed by the [Gemma Terms of Use](https://ai.google.dev/gemma/terms), including the [Gemma Prohibited Use Policy](https://ai.google.dev/gemma/prohibited_use_policy). By using, reproducing, modifying, distributing, performing, or displaying any portion or element of Gemma or any Gemma model derivatives, you agree to be bound by [those terms](https://ai.google.dev/gemma/terms) and that policy.\n" +
               "\n" +
-              "Your use of any other AI models in Google AI Edge Gallery is subject to the terms and conditions that apply to that model. Please read those terms carefully before using any third-party model.\n" +
+              "Your use of any other AI models in Distributed Edge Agents is subject to the terms and conditions that apply to that model. Please read those terms carefully before using any third-party model.\n" +
               "\n" +
-              "Google AI Edge Gallery may collect anonymous usage data about your use of the app and share such data with Google. We encourage you to read our [Privacy Policy](https://policies.google.com/privacy). It explains what information we collect, why we collect it, and how you can update, manage, export, and delete your information.",
+              "Distributed Edge Agents may collect anonymous usage data about your use of the app and share such data with Google. We encourage you to read our [Privacy Policy](https://policies.google.com/privacy). It explains what information we collect, why we collect it, and how you can update, manage, export, and delete your information.",
             modifier = Modifier.padding(top = 14.dp),
           )
         }

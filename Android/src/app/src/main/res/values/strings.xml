@@ -16,7 +16,7 @@
 
 <resources>
     <!-- TODO(jingjin): Add translation support when i18n is ready. -->
-    <string name="app_name" translatable="false">Google AI Edge Gallery</string>
+    <string name="app_name" translatable="false">Distributed Edge Agents</string>
     <string name="model_manager" translatable="false">Model Manager</string>
     <string name="downloaded_size" translatable="false">%1$s downloaded</string>
     <string name="cancel" translatable="false">Cancel</string>
@@ -31,7 +31,7 @@
     <string name="chat_textinput_placeholder" translatable="false">Type message…</string>
     <string name="chat_you" translatable="false">You</string>
     <string name="chat_llm_agent_name" translatable="false">LLM</string>
-    <string name="chat_generic_agent_name" translatable="false">Model</string>
+    <string name="chat_generic_agent_name" translatable="false">Agent</string>
     <string name="chat_generic_result_name" translatable="false">Result</string>
     <string name="model_not_downloaded_msg" translatable="false">Model not downloaded yet</string>
     <string name="model_is_initializing_msg" translatable="false">Initializing model…</string>
@@ -39,7 +39,7 @@
     <string name="text_input_placeholder_text_classification" translatable="false">Type movie review to classify…</string>
     <string name="text_image_generation_text_field_placeholder" translatable="false">Type prompt…</string>
     <string name="text_input_placeholder_llm_chat" translatable="false">Type prompt…</string>
-    <string name="tos_sheet_title_app_name" translatable="false">Google AI Edge Gallery App</string>
+    <string name="tos_sheet_title_app_name" translatable="false">Distributed Edge Agents App</string>
     <string name="tos_sheet_title_tos" translatable="false">Terms of Service</string>
     <string name="tos_sheet_view_full_tos" translatable="false">View the full Terms of Service</string>
     <string name="tos_sheet_view_accept_button_label" translatable="false">Accept and Continue</string>

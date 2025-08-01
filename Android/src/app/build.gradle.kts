@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   alias(libs.plugins.android.application)
@@ -24,6 +25,7 @@ plugins {
   alias(libs.plugins.protobuf)
   alias(libs.plugins.hilt.application)
   alias(libs.plugins.oss.licenses)
+  // alias(libs.plugins.objectbox)
   kotlin("kapt")
 }
 
@@ -33,10 +35,10 @@ android {
 
   defaultConfig {
     applicationId = "com.google.aiedge.gallery"
-    minSdk = 31
+    minSdk = 28
     targetSdk = 35
     versionCode = 1
-    versionName = "1.0.4"
+    versionName = "1.1.0"
 
     // Needed for HuggingFace auth workflows.
     // Use the scheme of the "Redirect URLs" in HuggingFace app.
@@ -54,17 +56,21 @@ android {
     }
   }
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-  }
-  kotlinOptions {
-    jvmTarget = "11"
-    freeCompilerArgs += "-Xcontext-receivers"
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
   }
   buildFeatures {
     compose = true
     buildConfig = true
   }
+}
+
+kotlin {
+  compilerOptions {
+    jvmTarget = JvmTarget.JVM_21
+    freeCompilerArgs.add("-Xcontext-receivers")
+  }
+  jvmToolchain(21)
 }
 
 dependencies {
@@ -103,7 +109,13 @@ dependencies {
   implementation(libs.play.services.oss.licenses)
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.analytics)
+  implementation(libs.play.services.nearby)
+  implementation(libs.objectbox.android)
+  implementation(libs.objectbox.kotlin)
+  // implementation(libs.objectbox.java)
+  // implementation(libs.objectbox.vector)
   kapt(libs.hilt.android.compiler)
+  kapt(libs.objectbox.processor)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
@@ -116,5 +128,5 @@ dependencies {
 
 protobuf {
   protoc { artifact = "com.google.protobuf:protoc:4.26.1" }
-  generateProtoTasks { all().forEach { it.plugins { create("java") { option("lite") } } } }
+  generateProtoTasks { all().forEach { it.builtins { create("java") { option("lite") } } } }
 }

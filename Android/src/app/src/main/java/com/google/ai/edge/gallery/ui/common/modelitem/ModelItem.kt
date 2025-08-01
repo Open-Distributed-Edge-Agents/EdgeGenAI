@@ -29,12 +29,8 @@ package com.google.ai.edge.gallery.ui.common.modelitem
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,21 +38,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material.icons.rounded.UnfoldLess
-import androidx.compose.material.icons.rounded.UnfoldMore
-import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,7 +60,6 @@ import com.google.ai.edge.gallery.ui.common.MarkdownText
 import com.google.ai.edge.gallery.ui.common.TaskIcon
 import com.google.ai.edge.gallery.ui.common.checkNotificationPermissionAndStartDownload
 import com.google.ai.edge.gallery.ui.common.getTaskBgColor
-import com.google.ai.edge.gallery.ui.common.getTaskIconColor
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 
 private val DEFAULT_VERTICAL_PADDING = 16.dp
@@ -96,7 +83,6 @@ fun ModelItem(
   verticalSpacing: Dp = DEFAULT_VERTICAL_PADDING,
   showDeleteButton: Boolean = true,
   showConfigButtonIfExisted: Boolean = false,
-  canExpand: Boolean = true,
 ) {
   val context = LocalContext.current
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -108,204 +94,77 @@ fun ModelItem(
       modelManagerViewModel.downloadModel(task = task, model = model)
     }
 
-  var isExpanded by remember { mutableStateOf(false) }
-
-  var boxModifier =
+  val boxModifier =
     modifier.fillMaxWidth().clip(RoundedCornerShape(size = 42.dp)).background(getTaskBgColor(task))
-  boxModifier =
-    if (canExpand) {
-      boxModifier.clickable(
-        onClick = {
-          if (!model.imported) {
-            isExpanded = !isExpanded
-          } else {
-            onModelClicked(model)
-          }
-        },
-        interactionSource = remember { MutableInteractionSource() },
-        indication = ripple(bounded = true, radius = 1000.dp),
-      )
-    } else {
-      boxModifier
-    }
 
   Box(modifier = boxModifier, contentAlignment = Alignment.Center) {
-    SharedTransitionLayout {
-      AnimatedContent(isExpanded, label = "item_layout_transition") { targetState ->
-        val taskIcon =
-          @Composable {
-            TaskIcon(
-              task = task,
-              modifier =
-                Modifier.sharedElement(
-                  sharedContentState = rememberSharedContentState(key = "task_icon"),
-                  animatedVisibilityScope = this@AnimatedContent,
-                ),
-            )
-          }
-
-        val modelNameAndStatus =
-          @Composable {
-            ModelNameAndStatus(
-              model = model,
-              task = task,
-              downloadStatus = downloadStatus,
-              isExpanded = isExpanded,
-              animatedVisibilityScope = this@AnimatedContent,
-              sharedTransitionScope = this@SharedTransitionLayout,
-            )
-          }
-
-        val actionButton =
-          @Composable {
-            ModelItemActionButton(
-              context = context,
-              model = model,
-              task = task,
-              modelManagerViewModel = modelManagerViewModel,
-              downloadStatus = downloadStatus,
-              onDownloadClicked = { model ->
-                checkNotificationPermissionAndStartDownload(
-                  context = context,
-                  launcher = launcher,
-                  modelManagerViewModel = modelManagerViewModel,
-                  task = task,
-                  model = model,
-                )
-              },
-              showDeleteButton = showDeleteButton,
-              showDownloadButton = false,
-              modifier =
-                Modifier.sharedElement(
-                  sharedContentState = rememberSharedContentState(key = "action_button"),
-                  animatedVisibilityScope = this@AnimatedContent,
-                ),
-            )
-          }
-
-        val expandButton =
-          @Composable {
-            Icon(
-              // For imported model, show ">" directly indicating users can just tap the model item
-              // to
-              // go into it without needing to expand it first.
-              if (model.imported) Icons.Rounded.ChevronRight
-              else if (isExpanded) Icons.Rounded.UnfoldLess else Icons.Rounded.UnfoldMore,
-              contentDescription = "",
-              tint = getTaskIconColor(task),
-              modifier =
-                Modifier.sharedElement(
-                  sharedContentState = rememberSharedContentState(key = "expand_button"),
-                  animatedVisibilityScope = this@AnimatedContent,
-                ),
-            )
-          }
-
-        val description =
-          @Composable {
-            if (model.info.isNotEmpty()) {
-              MarkdownText(
-                model.info,
-                modifier =
-                  Modifier.sharedElement(
-                      sharedContentState = rememberSharedContentState(key = "description"),
-                      animatedVisibilityScope = this@AnimatedContent,
-                    )
-                    .skipToLookaheadSize(),
-              )
-            }
-          }
-
-        val buttonsRow =
-          @Composable {
-            Row(
-              horizontalArrangement = Arrangement.spacedBy(12.dp),
-              modifier =
-                Modifier.sharedElement(
-                    sharedContentState = rememberSharedContentState(key = "buttons_row"),
-                    animatedVisibilityScope = this@AnimatedContent,
-                  )
-                  .skipToLookaheadSize(),
-            ) {
-              // The "learn more" button. Click to show related urls in a bottom sheet.
-              if (model.learnMoreUrl.isNotEmpty()) {
-                OutlinedButton(
-                  onClick = {
-                    if (isExpanded) {
-                      val intent = Intent(Intent.ACTION_VIEW, model.learnMoreUrl.toUri())
-                      context.startActivity(intent)
-                    }
-                  }
-                ) {
-                  Text("Learn More", maxLines = 1)
-                }
-              }
-
-              // Button to start the download and start the chat session with the model.
-              val needToDownloadFirst =
-                downloadStatus?.status == ModelDownloadStatusType.NOT_DOWNLOADED ||
-                  downloadStatus?.status == ModelDownloadStatusType.FAILED
-              DownloadAndTryButton(
+    Column(
+      verticalArrangement = Arrangement.spacedBy(14.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      modifier =
+      Modifier.fillMaxWidth().padding(vertical = verticalSpacing, horizontal = 18.dp),
+    ) {
+      Box(contentAlignment = Alignment.Center) {
+        TaskIcon(task = task)
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.End,
+        ) {
+          ModelItemActionButton(
+            context = context,
+            model = model,
+            task = task,
+            modelManagerViewModel = modelManagerViewModel,
+            downloadStatus = downloadStatus,
+            onDownloadClicked = { model ->
+              checkNotificationPermissionAndStartDownload(
+                context = context,
+                launcher = launcher,
+                modelManagerViewModel = modelManagerViewModel,
                 task = task,
                 model = model,
-                enabled = isExpanded,
-                needToDownloadFirst = needToDownloadFirst,
-                modelManagerViewModel = modelManagerViewModel,
-                onClicked = { onModelClicked(model) },
               )
+            },
+            showDeleteButton = showDeleteButton,
+            showDownloadButton = false,
+          )
+        }
+      }
+      ModelNameAndStatus(
+        model = model,
+        task = task,
+        downloadStatus = downloadStatus
+      )
+      if (model.info.isNotEmpty()) {
+        MarkdownText(
+          model.info,
+        )
+      }
+      Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+      ) {
+        if (model.learnMoreUrl.isNotEmpty()) {
+          OutlinedButton(
+            onClick = {
+              val intent = Intent(Intent.ACTION_VIEW, model.learnMoreUrl.toUri())
+              context.startActivity(intent)
             }
-          }
-
-        // Collapsed state.
-        if (!targetState) {
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(12.dp),
-              modifier =
-                Modifier.fillMaxWidth()
-                  .padding(start = 18.dp, end = 18.dp)
-                  .padding(vertical = verticalSpacing),
-            ) {
-              // Icon at the left.
-              taskIcon()
-              // Model name and status at the center.
-              Row(modifier = Modifier.weight(1f)) { modelNameAndStatus() }
-              // Action button and expand/collapse button at the right.
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                actionButton()
-                expandButton()
-              }
-            }
-          }
-        } else {
-          Column(
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-              Modifier.fillMaxWidth().padding(vertical = verticalSpacing, horizontal = 18.dp),
           ) {
-            Box(contentAlignment = Alignment.Center) {
-              // Icon at the top-center.
-              taskIcon()
-              // Action button and expand/collapse button at the right.
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-              ) {
-                actionButton()
-                expandButton()
-              }
-            }
-            // Name and status below the icon.
-            modelNameAndStatus()
-            // Description.
-            description()
-            // Buttons
-            buttonsRow()
+            Text("Learn More", maxLines = 1)
           }
         }
+        val needToDownloadFirst =
+          downloadStatus?.status == ModelDownloadStatusType.NOT_DOWNLOADED ||
+                  downloadStatus?.status == ModelDownloadStatusType.FAILED
+        DownloadAndTryButton(
+          task = task,
+          model = model,
+          enabled = true,
+          needToDownloadFirst = needToDownloadFirst,
+          modelManagerViewModel = modelManagerViewModel,
+          onClicked = { onModelClicked(model) },
+        )
       }
     }
   }

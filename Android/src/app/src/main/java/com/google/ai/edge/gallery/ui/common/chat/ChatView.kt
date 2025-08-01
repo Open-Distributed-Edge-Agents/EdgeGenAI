@@ -96,6 +96,7 @@ fun ChatView(
   onStopButtonClicked: (Model) -> Unit = {},
   chatInputType: ChatInputType = ChatInputType.TEXT,
   showStopButtonInInputWhenInProgress: Boolean = false,
+  bottomContent: @Composable () -> Unit = {}
 ) {
   val uiState by viewModel.uiState.collectAsState()
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -103,9 +104,18 @@ fun ChatView(
   var selectedImage by remember { mutableStateOf<Bitmap?>(null) }
   var showImageViewer by remember { mutableStateOf(false) }
 
+  // When the view is first composed, check if the selected model is valid for the current task.
+  // If not, select the first model from the task's list. This prevents a crash when the
+  // previously selected model is not in the current task's model list.
+  LaunchedEffect(Unit) {
+    if (task.models.none { it.name == selectedModel.name }) {
+      modelManagerViewModel.selectModel(task.models.first())
+    }
+  }
+
   val pagerState =
     rememberPagerState(
-      initialPage = task.models.indexOf(selectedModel),
+      initialPage = task.models.indexOf(selectedModel).coerceAtLeast(0),
       pageCount = { task.models.size },
     )
   val context = LocalContext.current
@@ -244,6 +254,7 @@ fun ChatView(
               modifier = Modifier.weight(1f).graphicsLayer { alpha = curAlpha },
               chatInputType = chatInputType,
               showStopButtonInInputWhenInProgress = showStopButtonInInputWhenInProgress,
+              bottomContent = bottomContent
             )
           }
         }

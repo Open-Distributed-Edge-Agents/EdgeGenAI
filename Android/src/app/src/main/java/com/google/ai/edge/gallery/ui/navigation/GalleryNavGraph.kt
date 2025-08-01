@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
@@ -71,6 +72,7 @@ import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnScreen
 import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnViewModel
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManager
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
+import com.google.ai.edge.gallery.ui.nearby.NearbyChatView
 
 private const val TAG = "AGGalleryNavGraph"
 private const val ROUTE_PLACEHOLDER = "placeholder"
@@ -164,11 +166,13 @@ fun GalleryNavHost(
       ModelManager(
         viewModel = modelManagerViewModel,
         task = curPickedTask,
-        onModelClicked = { model ->
+        onModelClicked = { model, isCommander, agentName ->
           navigateToTaskScreen(
             navController = navController,
             taskType = curPickedTask.type,
             model = model,
+            isCommander = isCommander,
+            agentName = agentName
           )
         },
         navigateUp = { showModelManager = false },
@@ -195,6 +199,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmChatViewModel = hiltViewModel(backStackEntry)
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_CHAT)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -235,6 +241,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmAskImageViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_ASK_IMAGE)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -255,6 +263,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmAskAudioViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_ASK_AUDIO)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -265,6 +275,27 @@ fun GalleryNavHost(
           navigateUp = { navController.navigateUp() },
         )
       }
+    }
+
+    
+
+    composable(
+        route = "nearby_chat/{isCommander}/{agentName}",
+        arguments = listOf(
+            navArgument("isCommander") { type = NavType.BoolType },
+            navArgument("agentName") { type = NavType.StringType; nullable = true }
+        )
+    ) { backStackEntry ->
+        val viewModel: LlmChatViewModel = hiltViewModel(backStackEntry)
+        val isCommander = backStackEntry.arguments?.getBoolean("isCommander") ?: false
+        val agentName = backStackEntry.arguments?.getString("agentName")
+        viewModel.startNearbyConnections(isCommander, agentName)
+
+        NearbyChatView(
+            viewModel = viewModel,
+            modelManagerViewModel = modelManagerViewModel,
+            navigateUp = { navController.navigateUp() }
+        )
     }
   }
 
@@ -282,6 +313,8 @@ fun GalleryNavHost(
           navController = navController,
           taskType = TaskType.LLM_CHAT,
           model = model,
+          isCommander = false,
+          agentName = null
         )
       }
     }
@@ -292,6 +325,8 @@ fun navigateToTaskScreen(
   navController: NavHostController,
   taskType: TaskType,
   model: Model? = null,
+  isCommander: Boolean,
+  agentName: String?
 ) {
   val modelName = model?.name ?: ""
   when (taskType) {
@@ -300,6 +335,7 @@ fun navigateToTaskScreen(
     TaskType.LLM_ASK_AUDIO -> navController.navigate("${LlmAskAudioDestination.route}/${modelName}")
     TaskType.LLM_PROMPT_LAB ->
       navController.navigate("${LlmSingleTurnDestination.route}/${modelName}")
+    TaskType.NEARBY_CHAT -> navController.navigate("nearby_chat/$isCommander/$agentName")
     TaskType.TEST_TASK_1 -> {}
     TaskType.TEST_TASK_2 -> {}
   }
