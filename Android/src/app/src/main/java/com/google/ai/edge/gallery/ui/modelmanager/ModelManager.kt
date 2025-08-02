@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.ai.edge.gallery.GalleryTopAppBar
 import com.google.ai.edge.gallery.data.AppBarAction
@@ -86,7 +85,7 @@ fun ModelManager(
         },
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            if (task.type == TaskType.NEARBY_CHAT) {
+            if (task.type == TaskType.GROUP_CHAT) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.Start
@@ -118,7 +117,7 @@ fun ModelManager(
                     }
                 }
             }
-            if (task.type != TaskType.NEARBY_CHAT || isRoleSelected) {
+            if (task.type != TaskType.GROUP_CHAT || isRoleSelected) {
                 ModelList(
                     task = task,
                     modelManagerViewModel = viewModel,

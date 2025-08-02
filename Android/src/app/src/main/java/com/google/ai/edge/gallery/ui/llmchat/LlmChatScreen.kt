@@ -41,6 +41,10 @@ object LlmAskAudioDestination {
   val route = "LlmAskAudioRoute"
 }
 
+object GroupChatDestination {
+  var route = "GroupChatRoute"
+}
+
 @Composable
 fun LlmChatScreen(
   modelManagerViewModel: ModelManagerViewModel,
@@ -77,6 +81,21 @@ fun LlmAskAudioScreen(
   navigateUp: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: LlmAskAudioViewModel,
+) {
+  ChatViewWrapper(
+    viewModel = viewModel,
+    modelManagerViewModel = modelManagerViewModel,
+    navigateUp = navigateUp,
+    modifier = modifier,
+  )
+}
+
+@Composable
+fun GroupChatScreen(
+  modelManagerViewModel: ModelManagerViewModel,
+  navigateUp: () -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: LlmGroupChatViewModel,
 ) {
   ChatViewWrapper(
     viewModel = viewModel,

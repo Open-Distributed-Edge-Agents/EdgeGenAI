@@ -49,6 +49,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.google.ai.edge.gallery.data.Model
+import com.google.ai.edge.gallery.data.TASK_GROUP_CHAT
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_AUDIO
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_IMAGE
 import com.google.ai.edge.gallery.data.TASK_LLM_CHAT
@@ -58,6 +59,8 @@ import com.google.ai.edge.gallery.data.TaskType
 import com.google.ai.edge.gallery.data.getModelByName
 import com.google.ai.edge.gallery.firebaseAnalytics
 import com.google.ai.edge.gallery.ui.home.HomeScreen
+import com.google.ai.edge.gallery.ui.llmchat.GroupChatDestination
+import com.google.ai.edge.gallery.ui.llmchat.GroupChatScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmAskAudioDestination
 import com.google.ai.edge.gallery.ui.llmchat.LlmAskAudioScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmAskAudioViewModel
@@ -67,12 +70,12 @@ import com.google.ai.edge.gallery.ui.llmchat.LlmAskImageViewModel
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatDestination
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatViewModel
+import com.google.ai.edge.gallery.ui.llmchat.LlmGroupChatViewModel
 import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnDestination
 import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnScreen
 import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnViewModel
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManager
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
-import com.google.ai.edge.gallery.ui.nearby.NearbyChatView
 
 private const val TAG = "AGGalleryNavGraph"
 private const val ROUTE_PLACEHOLDER = "placeholder"
@@ -277,25 +280,26 @@ fun GalleryNavHost(
       }
     }
 
-    
-
+    // Group chat.
     composable(
-        route = "nearby_chat/{isCommander}/{agentName}",
-        arguments = listOf(
-            navArgument("isCommander") { type = NavType.BoolType },
-            navArgument("agentName") { type = NavType.StringType; nullable = true }
-        )
+      route = "${GroupChatDestination.route}/{modelName}/{isCommander}/{agentName}",
+      arguments = listOf(navArgument("modelName") { type = NavType.StringType }),
+      enterTransition = { slideEnter() },
+      exitTransition = { slideExit() },
     ) { backStackEntry ->
-        val viewModel: LlmChatViewModel = hiltViewModel(backStackEntry)
-        val isCommander = backStackEntry.arguments?.getBoolean("isCommander") ?: false
-        val agentName = backStackEntry.arguments?.getString("agentName")
-        viewModel.startNearbyConnections(isCommander, agentName)
+      val viewModel: LlmGroupChatViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
-        NearbyChatView(
-            viewModel = viewModel,
-            modelManagerViewModel = modelManagerViewModel,
-            navigateUp = { navController.navigateUp() }
+      getModelFromNavigationParam(backStackEntry, TASK_GROUP_CHAT)?.let { defaultModel ->
+        modelManagerViewModel.selectModel(defaultModel)
+
+        GroupChatScreen(
+          viewModel = viewModel,
+          modelManagerViewModel = modelManagerViewModel,
+          navigateUp = { navController.navigateUp() },
         )
+      }
     }
   }
 
@@ -335,7 +339,7 @@ fun navigateToTaskScreen(
     TaskType.LLM_ASK_AUDIO -> navController.navigate("${LlmAskAudioDestination.route}/${modelName}")
     TaskType.LLM_PROMPT_LAB ->
       navController.navigate("${LlmSingleTurnDestination.route}/${modelName}")
-    TaskType.NEARBY_CHAT -> navController.navigate("nearby_chat/$isCommander/$agentName")
+    TaskType.GROUP_CHAT -> navController.navigate("${GroupChatDestination.route}/${modelName}/$isCommander/$agentName")
     TaskType.TEST_TASK_1 -> {}
     TaskType.TEST_TASK_2 -> {}
   }

@@ -25,7 +25,7 @@ import com.google.ai.edge.gallery.data.Mission
 import com.google.ai.edge.gallery.data.MissionRepository
 import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.SystemPromptRepository
-import com.google.ai.edge.gallery.data.TASK_NEARBY_CHAT
+import com.google.ai.edge.gallery.data.TASK_GROUP_CHAT
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_AUDIO
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_IMAGE
 import com.google.ai.edge.gallery.data.TASK_LLM_CHAT
@@ -51,7 +51,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 private const val TAG = "AGLlmChatViewModel"
@@ -130,7 +129,7 @@ open class LlmChatViewModelBase(
     }
 
     fun startNearbyConnections(isCommander: Boolean, agentName: String?) {
-        curTask = TASK_NEARBY_CHAT
+        curTask = TASK_GROUP_CHAT
         this.isCommander = isCommander
         this.agentName = agentName
         val nonNullAgentName = agentName ?: "N/A"
@@ -401,20 +400,6 @@ open class LlmChatViewModelBase(
 }
 
 @HiltViewModel
-class LlmGroupChatViewModel @Inject constructor(
-    nearbyConnectionsManager: NearbyConnectionsManager,
-    systemPromptRepository: SystemPromptRepository,
-    missionRepository: MissionRepository,
-    @ApplicationContext private val context: Context,
-) : LlmChatViewModelBase(
-    curTask = TASK_NEARBY_CHAT,
-    nearbyConnectionsManager,
-    systemPromptRepository,
-    missionRepository,
-    context
-)
-
-@HiltViewModel
 class LlmChatViewModel @Inject constructor(
     nearbyConnectionsManager: NearbyConnectionsManager,
     systemPromptRepository: SystemPromptRepository,
@@ -450,6 +435,19 @@ class LlmAskAudioViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : LlmChatViewModelBase(
     curTask = TASK_LLM_ASK_AUDIO,
+    nearbyConnectionsManager,
+    systemPromptRepository,
+    missionRepository,
+    context
+)
+
+class LlmGroupChatViewModel @Inject constructor(
+    nearbyConnectionsManager: NearbyConnectionsManager,
+    systemPromptRepository: SystemPromptRepository,
+    missionRepository: MissionRepository,
+    @ApplicationContext private val context: Context,
+) : LlmChatViewModelBase(
+    curTask = TASK_GROUP_CHAT,
     nearbyConnectionsManager,
     systemPromptRepository,
     missionRepository,
