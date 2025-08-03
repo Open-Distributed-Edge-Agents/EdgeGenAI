@@ -441,6 +441,7 @@ class LlmAskAudioViewModel @Inject constructor(
     context
 )
 
+@HiltViewModel
 class LlmGroupChatViewModel @Inject constructor(
     nearbyConnectionsManager: NearbyConnectionsManager,
     systemPromptRepository: SystemPromptRepository,
