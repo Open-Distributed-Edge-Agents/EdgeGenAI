@@ -21,11 +21,13 @@ import com.google.ai.edge.gallery.proto.AccessTokenData
 import com.google.ai.edge.gallery.proto.ImportedModel
 import com.google.ai.edge.gallery.proto.Settings
 import com.google.ai.edge.gallery.proto.Theme
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 // TODO(b/423700720): Change to async (suspend) functions
 interface DataStoreRepository {
+  fun settings(): Flow<Settings>
   fun saveTextInputHistory(history: List<String>)
 
   fun readTextInputHistory(): List<String>
@@ -33,6 +35,8 @@ interface DataStoreRepository {
   fun saveTheme(theme: Theme)
 
   fun readTheme(): Theme
+
+  fun setBypassModelAllowlistDownload(bypass: Boolean)
 
   fun saveAccessTokenData(accessToken: String, refreshToken: String, expiresAt: Long)
 
@@ -51,6 +55,8 @@ interface DataStoreRepository {
 
 /** Repository for managing data using Proto DataStore. */
 class DefaultDataStoreRepository(private val dataStore: DataStore<Settings>) : DataStoreRepository {
+  override fun settings(): Flow<Settings> = dataStore.data
+
   override fun saveTextInputHistory(history: List<String>) {
     runBlocking {
       dataStore.updateData { settings ->
@@ -78,6 +84,14 @@ class DefaultDataStoreRepository(private val dataStore: DataStore<Settings>) : D
       val curTheme = settings.theme
       // Use "auto" as the default theme.
       if (curTheme == Theme.THEME_UNSPECIFIED) Theme.THEME_AUTO else curTheme
+    }
+  }
+
+  override fun setBypassModelAllowlistDownload(bypass: Boolean) {
+    runBlocking {
+      dataStore.updateData { settings ->
+        settings.toBuilder().setBypassModelAllowlistDownload(bypass).build()
+      }
     }
   }
 
