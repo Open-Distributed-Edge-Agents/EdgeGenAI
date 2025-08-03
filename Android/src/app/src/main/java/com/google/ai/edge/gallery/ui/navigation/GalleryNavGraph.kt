@@ -175,7 +175,7 @@ fun GalleryNavHost(
             taskType = curPickedTask.type,
             model = model,
             isCommander = isCommander,
-            agentName = agentName
+            agentName = agentName ?: "N/A",
           )
         },
         navigateUp = { showModelManager = false },
@@ -283,13 +283,21 @@ fun GalleryNavHost(
     // Group chat.
     composable(
       route = "${GroupChatDestination.route}/{modelName}/{isCommander}/{agentName}",
-      arguments = listOf(navArgument("modelName") { type = NavType.StringType }),
+      arguments =
+        listOf(
+          navArgument("modelName") { type = NavType.StringType },
+          navArgument("isCommander") { type = NavType.BoolType },
+          navArgument("agentName") { type = NavType.StringType },
+        ),
       enterTransition = { slideEnter() },
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmGroupChatViewModel = hiltViewModel()
       val selectedModel by modelManagerViewModel.uiState.collectAsState()
       viewModel.setCurModel(selectedModel.selectedModel)
+
+      val isCommander = backStackEntry.arguments?.getBoolean("isCommander") ?: false
+      val agentName = backStackEntry.arguments?.getString("agentName") ?: "N/A"
 
       getModelFromNavigationParam(backStackEntry, TASK_GROUP_CHAT)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -298,6 +306,8 @@ fun GalleryNavHost(
           viewModel = viewModel,
           modelManagerViewModel = modelManagerViewModel,
           navigateUp = { navController.navigateUp() },
+          isCommander = isCommander,
+          agentName = agentName,
         )
       }
     }
@@ -318,7 +328,7 @@ fun GalleryNavHost(
           taskType = TaskType.LLM_CHAT,
           model = model,
           isCommander = false,
-          agentName = null
+          agentName = "N/A"
         )
       }
     }
@@ -330,7 +340,7 @@ fun navigateToTaskScreen(
   taskType: TaskType,
   model: Model? = null,
   isCommander: Boolean,
-  agentName: String?
+  agentName: String
 ) {
   val modelName = model?.name ?: ""
   when (taskType) {

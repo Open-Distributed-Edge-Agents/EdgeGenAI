@@ -96,7 +96,10 @@ fun GroupChatScreen(
   navigateUp: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: LlmGroupChatViewModel,
+  isCommander: Boolean,
+  agentName: String,
 ) {
+  viewModel.startNearbyConnections(isCommander, agentName)
   ChatViewWrapper(
     viewModel = viewModel,
     modelManagerViewModel = modelManagerViewModel,

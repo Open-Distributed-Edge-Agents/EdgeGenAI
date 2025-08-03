@@ -123,7 +123,7 @@ fun ModelManager(
                     modelManagerViewModel = viewModel,
                     onModelClicked = { model ->
                         val isCommander = selectedRole == "Commander"
-                        val agentName = if (isCommander) null else selectedRole
+                        val agentName = selectedRole
                         onModelClicked(model, isCommander, agentName)
                     },
                     modifier = Modifier.fillMaxSize(),
