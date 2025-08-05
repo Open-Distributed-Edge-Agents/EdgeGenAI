@@ -87,6 +87,11 @@ import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.data.TaskType
 import com.google.ai.edge.gallery.ui.common.ErrorDialog
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import com.google.ai.edge.gallery.ui.llmchat.LlmGroupChatViewModel
 import com.google.ai.edge.gallery.ui.modelmanager.ModelInitializationStatusType
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import com.google.ai.edge.gallery.ui.theme.customColors
@@ -521,7 +526,15 @@ fun ChatPanel(
           textFieldPlaceHolderRes = task.textInputPlaceHolderRes,
           onValueChanged = { curMessage = it },
           onSendMessage = {
-            onSendMessage(selectedModel, it)
+            if (viewModel is LlmGroupChatViewModel) {
+                if (uiState.inputMode == InputMode.LLM) {
+                    onSendMessage(selectedModel, it)
+                } else {
+                    viewModel.sendGroupMessage(curMessage)
+                }
+            } else {
+                onSendMessage(selectedModel, it)
+            }
             curMessage = ""
           },
           onOpenPromptTemplatesClicked = {
@@ -543,7 +556,12 @@ fun ChatPanel(
           showAudioItemsInMenu =
             selectedModel.llmSupportAudio && task.type === TaskType.LLM_ASK_AUDIO,
           showStopButtonWhenInProgress = showStopButtonInInputWhenInProgress,
-          bottomContent = bottomContent
+          bottomContent = {
+              if (viewModel is LlmGroupChatViewModel) {
+                  InputModeSelector(viewModel = viewModel)
+              }
+              bottomContent()
+          }
         )
       }
 
@@ -643,6 +661,36 @@ fun ChatPanel(
       }
     }
   }
+}
+
+@Composable
+fun InputModeSelector(viewModel: LlmGroupChatViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    val inputMode = uiState.inputMode
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = { viewModel.setInputMode(InputMode.LLM) },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (inputMode == InputMode.LLM) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Text(text = "LLM")
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(
+            onClick = { viewModel.setInputMode(InputMode.NEARBY) },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (inputMode == InputMode.NEARBY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Text(text = "Nearby")
+        }
+    }
 }
 
 // @Preview(showBackground = true)

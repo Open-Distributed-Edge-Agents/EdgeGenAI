@@ -42,6 +42,7 @@ import com.google.ai.edge.gallery.data.loadMissionDescription
 import com.google.ai.edge.gallery.ui.common.chat.ChatViewModel
 import com.google.ai.edge.gallery.ui.common.chat.Stat
 import com.google.ai.edge.gallery.data.EMPTY_MODEL
+import com.google.ai.edge.gallery.ui.common.chat.InputMode
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -72,6 +73,13 @@ open class LlmChatViewModelBase(
 
     private val _curModel = MutableStateFlow<Model>(EMPTY_MODEL)
     val curModel = _curModel.asStateFlow()
+
+    private val _recipient = MutableStateFlow("everyone")
+    val recipient = _recipient.asStateFlow()
+
+    fun setRecipient(recipient: String) {
+        _recipient.value = recipient
+    }
 
     fun setCurModel(model: Model) {
         _curModel.value = model
@@ -136,7 +144,7 @@ open class LlmChatViewModelBase(
         val role = if (isCommander) "Commander" else "Agent"
         val systemPrompt = systemPromptRepository.getSystemPrompt(role)
         if (systemPrompt != null) {
-            val prompt = if (role == "Agent") {
+            val prompt = if (role.startsWith("Agent")) {
                 String.format(systemPrompt.prompt, agentName)
             } else {
                 systemPrompt.prompt
@@ -174,17 +182,18 @@ open class LlmChatViewModelBase(
         nearbyConnectionsManager.stopAllEndpoints()
     }
 
-    fun sendMessage(message: String, isLocal: Boolean, recipient: String) {
+    fun sendGroupMessage(message: String) {
+        val isLocal = uiState.value.inputMode == InputMode.LLM
         if (!isLocal) {
             val alias = if (isCommander) "Commander" else agentName ?: "N/A"
-            if (recipient == "everyone") {
+            if (_recipient.value == "everyone") {
                 nearbyConnectionsManager.broadcastMessage(message, alias)
             } else {
                 nearbyConnectionsManager.sendMessage(
-                    nearbyConnectionsManager.getConnectedEndpoints().first { it == recipient },
+                    nearbyConnectionsManager.getConnectedEndpoints().first { it == _recipient.value },
                     message,
                     alias,
-                    recipient
+                    _recipient.value
                 )
             }
         }
