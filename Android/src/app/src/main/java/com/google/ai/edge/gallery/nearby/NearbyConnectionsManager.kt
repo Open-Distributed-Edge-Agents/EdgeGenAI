@@ -17,6 +17,7 @@
 package com.google.ai.edge.gallery.nearby
 
 import android.content.Context
+import android.provider.Settings
 import android.util.Log
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.AdvertisingOptions
@@ -80,11 +81,11 @@ class NearbyConnectionsManager @Inject constructor(
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             // Automatically accept the connection on both sides.
             val endpointName = connectionInfo.endpointName
-            if (connectedEndpoints.containsValue(endpointName)) {
-                onImpersonationDetected?.invoke(endpointName)
-                connectionsClient.rejectConnection(endpointId)
-                return
-            }
+//            if (connectedEndpoints.containsValue(endpointName)) {
+//                onImpersonationDetected?.invoke(endpointName)
+//                connectionsClient.rejectConnection(endpointId)
+//                return
+//            }
             connectionsClient.acceptConnection(endpointId, payloadCallback)
             connectedEndpoints[endpointId] = endpointName
         }
@@ -215,16 +216,17 @@ class NearbyConnectionsManager @Inject constructor(
         // If I am the next in line, I will become the new commander.
         // Otherwise, I will start discovering for a new commander.
         val sortedEndpoints = connectedEndpoints.keys.sorted()
-        if (sortedEndpoints.isNotEmpty() && sortedEndpoints.first() == getMyEndpointId()) {
+        if (sortedEndpoints.isNotEmpty() && sortedEndpoints.first() == myEndpointId) {
             startAdvertising("Commander")
         } else {
-            startDiscovery(getMyEndpointId())  // TODO
+            startDiscovery(myEndpointId)
         }
     }
 
-    private fun getMyEndpointId(): String {
-        // This is a placeholder. In a real app, you would need to get the endpoint ID of the current device.
-        return "MyEndpointId"
+    private val myEndpointId: String by lazy {
+        val deviceId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+        Log.d(TAG, "Device ID: $deviceId")
+        deviceId
     }
 
     fun onOriginalCommanderFound() {
@@ -232,10 +234,10 @@ class NearbyConnectionsManager @Inject constructor(
         // Otherwise, I will disconnect from the temporary commander and connect to the original one.
         if (isAdvertising) {
             stopAdvertising()
-            startDiscovery(getMyEndpointId())  // TODO
+            startDiscovery(myEndpointId)
         } else {
             stopAllEndpoints()
-            startDiscovery(getMyEndpointId())  // TODO
+            startDiscovery(myEndpointId)
         }
     }
 }
