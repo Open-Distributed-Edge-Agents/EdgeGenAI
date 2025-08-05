@@ -25,6 +25,7 @@ import java.security.Signature
 import java.security.spec.X509EncodedKeySpec
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.google.ai.edge.gallery.data.MAX_SUBORDINATE_COUNT
 
 @Singleton
 class CryptoManager @Inject constructor() {
@@ -33,7 +34,7 @@ class CryptoManager @Inject constructor() {
 
     init {
         generateKeyPair("Commander")
-        for (i in 1..5) {
+        for (i in 1..MAX_SUBORDINATE_COUNT) {
             generateKeyPair("Agent$i")
         }
     }

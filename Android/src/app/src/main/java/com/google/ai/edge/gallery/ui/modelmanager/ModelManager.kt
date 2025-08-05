@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.google.ai.edge.gallery.GalleryTopAppBar
 import com.google.ai.edge.gallery.data.AppBarAction
 import com.google.ai.edge.gallery.data.AppBarActionType
+import com.google.ai.edge.gallery.data.MAX_SUBORDINATE_COUNT
 import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.data.TaskType
@@ -102,8 +103,8 @@ fun ModelManager(
                         )
                         Text("Commander")
                     }
-                    (1..3).forEach { agentNumber ->
-                        val agentRole = "Agent $agentNumber"
+                    (1..MAX_SUBORDINATE_COUNT).forEach { agentNumber ->
+                        val agentRole = "Agent$agentNumber"
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable { selectedRole = agentRole }
