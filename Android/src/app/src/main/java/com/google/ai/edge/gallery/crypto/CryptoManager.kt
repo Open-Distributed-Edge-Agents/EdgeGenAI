@@ -44,8 +44,8 @@ class CryptoManager @Inject constructor(@ApplicationContext private val context:
     }
 
     private fun loadKeyPair(alias: String) {
-        val publicKeyString = context.assets.open("$alias-public.pem").bufferedReader().use { it.readText() }
-        val privateKeyString = context.assets.open("$alias-private.pem").bufferedReader().use { it.readText() }
+        val publicKeyString = context.assets.open("$alias.pub").bufferedReader().use { it.readText() }
+        val privateKeyString = context.assets.open("$alias.key").bufferedReader().use { it.readText() }
         val publicKey = deserializePublicKey(publicKeyString)
         val privateKey = deserializePrivateKey(privateKeyString)
         keyPairs[alias] = KeyPair(publicKey, privateKey)
