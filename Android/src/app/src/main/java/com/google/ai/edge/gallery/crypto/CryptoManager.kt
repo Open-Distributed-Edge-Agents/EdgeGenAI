@@ -16,33 +16,53 @@
 
 package com.google.ai.edge.gallery.crypto
 
+import android.content.Context
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Signature
+import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
+import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.google.ai.edge.gallery.data.MAX_SUBORDINATE_COUNT
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Singleton
-class CryptoManager @Inject constructor() {
+class CryptoManager @Inject constructor(@ApplicationContext private val context: Context) {
 
     private val keyPairs = mutableMapOf<String, KeyPair>()
 
     init {
-        generateKeyPair("Commander")
+        loadKeyPair("Commander")
         for (i in 1..MAX_SUBORDINATE_COUNT) {
-            generateKeyPair("Agent$i")
+            loadKeyPair("Agent$i")
         }
     }
 
-    private fun generateKeyPair(alias: String) {
-        val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
-        keyPairGenerator.initialize(2048)
-        keyPairs[alias] = keyPairGenerator.generateKeyPair()
+    private fun loadKeyPair(alias: String) {
+        val publicKeyString = context.assets.open("$alias-public.pem").bufferedReader().use { it.readText() }
+        val privateKeyString = context.assets.open("$alias-private.pem").bufferedReader().use { it.readText() }
+        val publicKey = deserializePublicKey(publicKeyString)
+        val privateKey = deserializePrivateKey(privateKeyString)
+        keyPairs[alias] = KeyPair(publicKey, privateKey)
+    }
+
+    private fun deserializePublicKey(base64EncodedPublicKey: String): PublicKey {
+        val decodedKey = Base64.getDecoder().decode(base64EncodedPublicKey)
+        val keySpec = X509EncodedKeySpec(decodedKey)
+        val keyFactory = KeyFactory.getInstance("RSA")
+        return keyFactory.generatePublic(keySpec)
+    }
+
+    private fun deserializePrivateKey(base64EncodedPrivateKey: String): PrivateKey {
+        val decodedKey = Base64.getDecoder().decode(base64EncodedPrivateKey)
+        val keySpec = PKCS8EncodedKeySpec(decodedKey)
+        val keyFactory = KeyFactory.getInstance("RSA")
+        return keyFactory.generatePrivate(keySpec)
     }
 
     fun getPublicKey(alias: String): PublicKey? {
