@@ -16,15 +16,21 @@
 
 package com.google.ai.edge.gallery.data
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.objectbox.kotlin.boxFor
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SystemPromptRepository @Inject constructor() {
+class SystemPromptRepository @Inject constructor(@ApplicationContext private val context: Context) {
     private val systemPromptBox = ObjectBox.store.boxFor<SystemPrompt>()
 
     fun getSystemPrompt(role: String): SystemPrompt? {
+        if (role == "Commander") {
+            val prompt = context.assets.open("commander_system_prompt.md").bufferedReader().use { it.readText() }
+            return SystemPrompt(role = role, prompt = prompt)
+        }
         return systemPromptBox.query(SystemPrompt_.role.equal(role)).build().findFirst()
     }
 

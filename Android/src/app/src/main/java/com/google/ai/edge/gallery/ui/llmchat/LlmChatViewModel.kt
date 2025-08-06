@@ -88,6 +88,16 @@ open class LlmChatViewModelBase(
     private var agentName: String? = null
     private var applicationContext: Context = context
 
+    private fun applySystemPrompt(prompt: String) {
+        viewModelScope.launch {
+            val model = curModel.first()
+            addMessage(
+                model = model,
+                message = ChatMessageText(content = prompt, side = ChatSide.SYSTEM)
+            )
+        }
+    }
+
     init {
         nearbyConnectionsManager.onMessageReceived = { endpointId, message, isValid, recipient ->
             viewModelScope.launch {
@@ -149,7 +159,7 @@ open class LlmChatViewModelBase(
             } else {
                 systemPrompt.prompt
             }
-            // TODO: Use the prompt to initialize the model
+            applySystemPrompt(prompt)
         }
 
         if (isCommander) {
