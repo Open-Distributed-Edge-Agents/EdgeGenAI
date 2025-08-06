@@ -61,6 +61,10 @@ Our roadmap includes the following feature additions:
 
 For more details, please see our [GitHub Issues](https://github.com/Open-Distributed-Edge-Agents/EdgeGenAI/issues).
 
+## Credits
+
+This project is a fork of the official [Google AI Edge Gallery](https://github.com/google-ai-edge/gallery) demo app and builds upon its foundation. We are grateful to the original authors for their work.
+
 ## Contributing
 
 We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
