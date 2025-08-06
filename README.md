@@ -1,61 +1,74 @@
-# Google AI Edge Gallery ✨
+# Stigmergy ODEA (Open Distributed Edge Agents)
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
+## Overview
 
-**Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
+Stigmergy ODEA is a decentralized, agentic system designed for high-stakes tactical operations on edge devices. It leverages the multi-modal capabilities of Google's groundbreaking Gemma 3B model to create a collective intelligence highly resistant to malfunctions and adversarial attacks.
 
-The Google AI Edge Gallery is an experimental app that puts the power of cutting-edge Generative AI models directly into your hands, running entirely on your Android *(available now)* and iOS *(coming soon)* devices. Dive into a world of creative and practical AI use cases, all running locally, without needing an internet connection once the model is loaded. Experiment with different models, chat, ask questions with images, explore prompts, and more!
+Deployed on a fleet of tiny Android devices (e.g., drones), the system operates as a hierarchical team with a designated **Commander** and multiple **Subordinates**. Each unit runs its own local agent, participating in a group chat to collaboratively perceive, plan, and act. This architecture is built for strategic decision-making and guidance in environments where real-time, centralized control is infeasible or too risky.
 
-**Overview**
-<img width="1532" alt="Overview" src="https://github.com/user-attachments/assets/4f2702d7-91a0-4eb3-aa76-58bc8e7089c6" />
+The agents communicate via **Android Nearby Connections**, forming a resilient mesh network that can adapt to changing conditions on the fly.
 
-**Ask Image**
-<img width="1532" alt="Ask Image" src="https://github.com/user-attachments/assets/e2b5b41b-fed0-4a7c-9547-2abb1c10962c" />
+## Core Concepts
 
-**Prompt Lab**
-<img width="1532" alt="Prompt Lab" src="https://github.com/user-attachments/assets/22e459d0-0365-4a92-8570-fb59d4d1e320" />
+*   **Collective Intelligence:** The system's strength lies in the emergent intelligence of the group. By sharing observations and intent through stigmergic communication, the agents can uncover hidden threats, adapt to environmental changes, and maintain mission alignment even when individual units are compromised.
+*   **Decentralized Agency:** Each drone is equipped with a powerful local agent, allowing for autonomous operation and reducing reliance on a single point of failure.
+*   **Commander/Subordinate Hierarchy:** The Commander provides strategic direction, issuing broadcast commands and requesting status reports to maintain operational tempo. However, the system is designed to survive the loss of a commander, with protocols in place to elect a new one.
 
-**AI Chat**
-<img width="1532" alt="AI Chat" src="https://github.com/user-attachments/assets/edaa4f89-237a-4b84-b647-b3c4631f09dc" />
+## Key Features
 
-## ✨ Core Features
+*   **High Resilience & Fault Tolerance:**
+    *   **Commander Loss:** The agent swarm can detect the loss of a commander and dynamically appoint a new one, ensuring mission continuity.
+    *   **Decentralized Operation:** The system avoids single points of failure, as intelligence is distributed across all agents.
+*   **Advanced Security:**
+    *   **Prompt Injection Resistance:** The agents' intelligence and mission context help them identify and resist malicious prompts intended to derail their objectives.
+    *   **Impersonation Defense:** The system is designed to detect and reject commands from unauthorized or impersonated devices.
+*   **Multi-Modal Perception:**
+    *   Leveraging the **Gemma 3B** model, agents can process both text and visual data to achieve a deeper understanding of their environment. This allows them to recognize discrepancies between expected and perceived mission targets, flagging potential issues or threats.
+*   **Edge-Optimized:**
+    *   Designed to run on resource-constrained tiny Android devices with processing power significantly less than a Jetson Orin Nano.
+    *   Communication is handled efficiently through the low-power, high-bandwidth capabilities of Android Nearby Connections.
 
-*   **📱 Run Locally, Fully Offline:** Experience the magic of GenAI without an internet connection. All processing happens directly on your device.
-*   **🤖 Choose Your Model:** Easily switch between different models from Hugging Face and compare their performance.
-*   **🖼️ Ask Image:** Upload an image and ask questions about it. Get descriptions, solve problems, or identify objects.
-*   **✍️ Prompt Lab:** Summarize, rewrite, generate code, or use freeform prompts to explore single-turn LLM use cases.
-*   **💬 AI Chat:** Engage in multi-turn conversations.
-*   **📊 Performance Insights:** Real-time benchmarks (TTFT, decode speed, latency).
-*   **🧩 Bring Your Own Model:** Test your local LiteRT `.task` models.
-*   **🔗 Developer Resources:** Quick links to model cards and source code.
+## Use Cases
 
-## 🏁 Get Started in Minutes!
+The primary use case for Stigmergy ODEA is to support **first responders** in assessing and navigating post-catastrophe environments. Deploying a swarm of ODEA-enabled drones can provide critical situational awareness after events like:
 
-1.  **Download the App:** Grab the [**latest APK**](https://github.com/google-ai-edge/gallery/releases/latest/download/ai-edge-gallery.apk).
-2.  **Install & Explore:** For detailed installation instructions (including for corporate devices) and a full user guide, head over to our [**Project Wiki**](https://github.com/google-ai-edge/gallery/wiki)!
+*   Earthquakes
+*   Forest Fires
+*   Floods and Hurricanes
 
-## 🛠️ Technology Highlights
+The collective intelligence can map disaster areas, identify survivors, and detect ongoing hazards, all while resisting the chaotic and unpredictable conditions of the environment.
 
-*   **Google AI Edge:** Core APIs and tools for on-device ML.
-*   **LiteRT:** Lightweight runtime for optimized model execution.
-*   **LLM Inference API:** Powering on-device Large Language Models.
-*   **Hugging Face Integration:** For model discovery and download.
+## Technology Stack
 
-## 🤝 Feedback
+*   **Generative AI:** Google Gemma 3B
+*   **Platform:** Android
+*   **Communication:** Android Nearby Connections
+*   **Architecture:** Decentralized Multi-Agent System
 
-This is an **experimental Alpha release**, and your input is crucial!
+## Gemma 3n Challenge
 
-*   🐞 **Found a bug?** [Report it here!](https://github.com/google-ai-edge/gallery/issues/new?assignees=&labels=bug&template=bug_report.md&title=%5BBUG%5D)
-*   💡 **Have an idea?** [Suggest a feature!](https://github.com/google-ai-edge/gallery/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFEATURE%5D)
+This project was submitted to the [Gemma 3n Challenge on Kaggle](https://www.kaggle.com/competitions/google-gemma-3n-hackathon/).
 
-## 📄 License
+## Future Plans
 
-Licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
+Our roadmap includes the following feature additions:
 
-## 🔗 Useful Links
+*   **Introduce Koog for Full Agentic Capabilities:** Integrate the Koog framework to enable more complex, goal-oriented agentic behaviors.
+*   **Explore Conversational Consensus Algorithms:** Research and implement algorithms that allow agents to reach a consensus through dialogue, improving collective decision-making.
+*   **Leverage Vector Store for Mission Detail Retrieval:** Utilize a vector store for efficient retrieval of mission-critical information, enhancing agent knowledge and responsiveness.
+*   **Log Interactions on a Crypto Ledger:** Implement a secure, immutable ledger for all agent interactions, providing a transparent and tamper-proof audit trail.
+*   **Add Prompt Guard:** Integrate a prompt guarding mechanism, such as Llama Guard 2, to further enhance security against adversarial attacks.
 
-*   [**Project Wiki (Detailed Guides)**](https://github.com/google-ai-edge/gallery/wiki)
-*   [Hugging Face LiteRT Community](https://huggingface.co/litert-community)
-*   [LLM Inference guide for Android](https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/android)
-*   [Google AI Edge Documentation](https://ai.google.dev/edge)
+For more details, please see our [GitHub Issues](https://github.com/Open-Distributed-Edge-Agents/EdgeGenAI/issues).
+
+## Credits
+
+This project is a fork of the official [Google AI Edge Gallery](https://github.com/google-ai-edge/gallery) demo app and builds upon its foundation. We are grateful to the original authors for their work.
+
+## Contributing
+
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
+
+## License
+
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
