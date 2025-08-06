@@ -29,12 +29,13 @@ import com.google.ai.edge.gallery.R
 
 /** Type of task. */
 enum class TaskType(val label: String, val id: String) {
-  LLM_CHAT(label = "AI Chat", id = "llm_chat"),
-  LLM_PROMPT_LAB(label = "Prompt Lab", id = "llm_prompt_lab"),
-  LLM_ASK_IMAGE(label = "Ask Image", id = "llm_ask_image"),
-  LLM_ASK_AUDIO(label = "Audio Scribe", id = "llm_ask_audio"),
-  TEST_TASK_1(label = "Test task 1", id = "test_task_1"),
-  TEST_TASK_2(label = "Test task 2", id = "test_task_2"),
+    LLM_CHAT(label = "AI Chat", id = "llm_chat"),
+    LLM_PROMPT_LAB(label = "Prompt Lab", id = "llm_prompt_lab"),
+    LLM_ASK_IMAGE(label = "Ask Image", id = "llm_ask_image"),
+    LLM_ASK_AUDIO(label = "Audio Scribe", id = "llm_ask_audio"),
+    GROUP_CHAT(label = "Group Chat", id = "group_chat"),
+    TEST_TASK_1(label = "Test task 1", id = "test_task_1"),
+    TEST_TASK_2(label = "Test task 2", id = "test_task_2"),
 }
 
 /** Data class for a task listed in home screen. */
@@ -79,7 +80,7 @@ val TASK_LLM_CHAT =
     description = "Chat with on-device large language models",
     docUrl = "https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/android",
     sourceCodeUrl =
-      "https://github.com/google-ai-edge/gallery/blob/main/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
+      "https://github.com/Open-Distributed-Edge-Agents/EdgeGenAI/blob/nearby-connections/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
     textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
   )
 
@@ -91,7 +92,7 @@ val TASK_LLM_PROMPT_LAB =
     description = "Single turn use cases with on-device large language models",
     docUrl = "https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/android",
     sourceCodeUrl =
-      "https://github.com/google-ai-edge/gallery/blob/main/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
+      "https://github.com/Open-Distributed-Edge-Agents/EdgeGenAI/blob/nearby-connections/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
     textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
   )
 
@@ -100,11 +101,11 @@ val TASK_LLM_ASK_IMAGE =
     type = TaskType.LLM_ASK_IMAGE,
     icon = Icons.Outlined.Mms,
     models = mutableListOf(),
-    description = "Ask questions about images with on-device large language models",
-    docUrl = "https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/android",
-    sourceCodeUrl =
-      "https://github.com/google-ai-edge/gallery/blob/main/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
-    textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
+    description = "Multi Modal chat with other devices using Nearby Connections",
+    // docUrl = "https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/android",
+    // sourceCodeUrl =
+    //   "https://github.com/Open-Distributed-Edge-Agents/EdgeGenAI/blob/nearby-connections/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
+    // textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
   )
 
 val TASK_LLM_ASK_AUDIO =
@@ -117,13 +118,21 @@ val TASK_LLM_ASK_AUDIO =
       "Instantly transcribe and/or translate audio clips using on-device large language models",
     docUrl = "https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/android",
     sourceCodeUrl =
-      "https://github.com/google-ai-edge/gallery/blob/main/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
+      "https://github.com/Open-Distributed-Edge-Agents/EdgeGenAI/blob/nearby-connections/Android/src/app/src/main/java/com/google/ai/edge/gallery/ui/llmchat/LlmChatModelHelper.kt",
     textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
+  )
+
+val TASK_GROUP_CHAT =
+  Task(
+    type = TaskType.GROUP_CHAT,
+    icon = Icons.Outlined.Forum,
+    models = mutableListOf(),
+    description = "Chat with other devices using Nearby Connections",
   )
 
 /** All tasks. */
 val TASKS: List<Task> =
-  listOf(TASK_LLM_ASK_IMAGE, TASK_LLM_ASK_AUDIO, TASK_LLM_PROMPT_LAB, TASK_LLM_CHAT)
+  listOf(TASK_LLM_ASK_IMAGE, TASK_GROUP_CHAT)
 
 fun getModelByName(name: String): Model? {
   for (task in TASKS) {

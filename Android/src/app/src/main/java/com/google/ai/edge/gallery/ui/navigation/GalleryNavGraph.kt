@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
@@ -48,6 +49,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.google.ai.edge.gallery.data.Model
+import com.google.ai.edge.gallery.data.TASK_GROUP_CHAT
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_AUDIO
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_IMAGE
 import com.google.ai.edge.gallery.data.TASK_LLM_CHAT
@@ -57,6 +59,8 @@ import com.google.ai.edge.gallery.data.TaskType
 import com.google.ai.edge.gallery.data.getModelByName
 import com.google.ai.edge.gallery.firebaseAnalytics
 import com.google.ai.edge.gallery.ui.home.HomeScreen
+import com.google.ai.edge.gallery.ui.llmchat.GroupChatDestination
+import com.google.ai.edge.gallery.ui.llmchat.GroupChatScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmAskAudioDestination
 import com.google.ai.edge.gallery.ui.llmchat.LlmAskAudioScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmAskAudioViewModel
@@ -66,6 +70,7 @@ import com.google.ai.edge.gallery.ui.llmchat.LlmAskImageViewModel
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatDestination
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatViewModel
+import com.google.ai.edge.gallery.ui.llmchat.LlmGroupChatViewModel
 import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnDestination
 import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnScreen
 import com.google.ai.edge.gallery.ui.llmsingleturn.LlmSingleTurnViewModel
@@ -164,11 +169,13 @@ fun GalleryNavHost(
       ModelManager(
         viewModel = modelManagerViewModel,
         task = curPickedTask,
-        onModelClicked = { model ->
+        onModelClicked = { model, isCommander, agentName ->
           navigateToTaskScreen(
             navController = navController,
             taskType = curPickedTask.type,
             model = model,
+            isCommander = isCommander,
+            agentName = agentName ?: "N/A",
           )
         },
         navigateUp = { showModelManager = false },
@@ -195,6 +202,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmChatViewModel = hiltViewModel(backStackEntry)
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_CHAT)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -235,6 +244,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmAskImageViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_ASK_IMAGE)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -255,6 +266,8 @@ fun GalleryNavHost(
       exitTransition = { slideExit() },
     ) { backStackEntry ->
       val viewModel: LlmAskAudioViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
 
       getModelFromNavigationParam(backStackEntry, TASK_LLM_ASK_AUDIO)?.let { defaultModel ->
         modelManagerViewModel.selectModel(defaultModel)
@@ -263,6 +276,38 @@ fun GalleryNavHost(
           viewModel = viewModel,
           modelManagerViewModel = modelManagerViewModel,
           navigateUp = { navController.navigateUp() },
+        )
+      }
+    }
+
+    // Group chat.
+    composable(
+      route = "${GroupChatDestination.route}/{modelName}/{isCommander}/{agentName}",
+      arguments =
+        listOf(
+          navArgument("modelName") { type = NavType.StringType },
+          navArgument("isCommander") { type = NavType.BoolType },
+          navArgument("agentName") { type = NavType.StringType },
+        ),
+      enterTransition = { slideEnter() },
+      exitTransition = { slideExit() },
+    ) { backStackEntry ->
+      val viewModel: LlmGroupChatViewModel = hiltViewModel()
+      val selectedModel by modelManagerViewModel.uiState.collectAsState()
+      viewModel.setCurModel(selectedModel.selectedModel)
+
+      val isCommander = backStackEntry.arguments?.getBoolean("isCommander") ?: false
+      val agentName = backStackEntry.arguments?.getString("agentName") ?: "N/A"
+
+      getModelFromNavigationParam(backStackEntry, TASK_GROUP_CHAT)?.let { defaultModel ->
+        modelManagerViewModel.selectModel(defaultModel)
+
+        GroupChatScreen(
+          viewModel = viewModel,
+          modelManagerViewModel = modelManagerViewModel,
+          navigateUp = { navController.navigateUp() },
+          isCommander = isCommander,
+          agentName = agentName,
         )
       }
     }
@@ -282,6 +327,8 @@ fun GalleryNavHost(
           navController = navController,
           taskType = TaskType.LLM_CHAT,
           model = model,
+          isCommander = false,
+          agentName = "N/A"
         )
       }
     }
@@ -292,6 +339,8 @@ fun navigateToTaskScreen(
   navController: NavHostController,
   taskType: TaskType,
   model: Model? = null,
+  isCommander: Boolean,
+  agentName: String
 ) {
   val modelName = model?.name ?: ""
   when (taskType) {
@@ -300,6 +349,7 @@ fun navigateToTaskScreen(
     TaskType.LLM_ASK_AUDIO -> navController.navigate("${LlmAskAudioDestination.route}/${modelName}")
     TaskType.LLM_PROMPT_LAB ->
       navController.navigate("${LlmSingleTurnDestination.route}/${modelName}")
+    TaskType.GROUP_CHAT -> navController.navigate("${GroupChatDestination.route}/${modelName}/$isCommander/$agentName")
     TaskType.TEST_TASK_1 -> {}
     TaskType.TEST_TASK_2 -> {}
   }

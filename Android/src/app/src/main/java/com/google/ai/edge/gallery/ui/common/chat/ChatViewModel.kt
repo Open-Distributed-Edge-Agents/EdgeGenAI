@@ -50,6 +50,9 @@ data class ChatUiState(
    * showing the stats below it.
    */
   val showingStatsByModel: Map<String, MutableSet<ChatMessage>> = mapOf(),
+
+  /** The current input mode. */
+  val inputMode: InputMode = InputMode.LLM,
 )
 
 /** ViewModel responsible for managing the chat UI state and handling chat-related operations. */
@@ -203,6 +206,10 @@ abstract class ChatViewModel(val task: Task) : ViewModel() {
 
   fun setPreparing(preparing: Boolean) {
     _uiState.update { _uiState.value.copy(preparing = preparing) }
+  }
+
+  fun setInputMode(inputMode: InputMode) {
+    _uiState.update { _uiState.value.copy(inputMode = inputMode) }
   }
 
   fun addConfigChangedMessage(

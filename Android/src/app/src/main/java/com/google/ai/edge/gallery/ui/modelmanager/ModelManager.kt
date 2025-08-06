@@ -1,19 +1,3 @@
-/*
- * Copyright 2025 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.google.ai.edge.gallery.ui.modelmanager
 
 // import androidx.compose.ui.tooling.preview.Preview
@@ -22,75 +6,133 @@ package com.google.ai.edge.gallery.ui.modelmanager
 // import com.google.ai.edge.gallery.ui.theme.GalleryTheme
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.google.ai.edge.gallery.GalleryTopAppBar
 import com.google.ai.edge.gallery.data.AppBarAction
 import com.google.ai.edge.gallery.data.AppBarActionType
+import com.google.ai.edge.gallery.data.MAX_SUBORDINATE_COUNT
 import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.Task
+import com.google.ai.edge.gallery.data.TaskType
 
 /** A screen to manage models. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelManager(
-  task: Task,
-  viewModel: ModelManagerViewModel,
-  navigateUp: () -> Unit,
-  onModelClicked: (Model) -> Unit,
-  modifier: Modifier = Modifier,
+    task: Task,
+    viewModel: ModelManagerViewModel,
+    navigateUp: () -> Unit,
+    onModelClicked: (Model, Boolean, String?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-  // Set title based on the task.
-  var title = "${task.type.label} model"
-  if (task.models.size != 1) {
-    title += "s"
-  }
-  // Model count.
-  val modelCount by remember {
-    derivedStateOf {
-      val trigger = task.updateTrigger.value
-      if (trigger >= 0) {
-        task.models.size
-      } else {
-        -1
-      }
+    var selectedRole by remember { mutableStateOf<String?>(null) }
+    val isRoleSelected by remember { derivedStateOf { selectedRole != null } }
+
+    // Set title based on the task.
+    var title = "${task.type.label} model"
+    if (task.models.size != 1) {
+        title += "s"
     }
-  }
-
-  // Navigate up when there are no models left.
-  LaunchedEffect(modelCount) {
-    if (modelCount == 0) {
-      navigateUp()
+    // Model count.
+    val modelCount by remember {
+        derivedStateOf {
+            val trigger = task.updateTrigger.value
+            if (trigger >= 0) {
+                task.models.size
+            } else {
+                -1
+            }
+        }
     }
-  }
 
-  // Handle system's edge swipe.
-  BackHandler { navigateUp() }
+    // Navigate up when there are no models left.
+    LaunchedEffect(modelCount) {
+        if (modelCount == 0) {
+            navigateUp()
+        }
+    }
 
-  Scaffold(
-    modifier = modifier,
-    topBar = {
-      GalleryTopAppBar(
-        title = title,
-        leftAction = AppBarAction(actionType = AppBarActionType.NAVIGATE_UP, actionFn = navigateUp),
-      )
-    },
-  ) { innerPadding ->
-    ModelList(
-      task = task,
-      modelManagerViewModel = viewModel,
-      contentPadding = innerPadding,
-      onModelClicked = onModelClicked,
-      modifier = Modifier.fillMaxSize(),
-    )
-  }
+    // Handle system's edge swipe.
+    BackHandler { navigateUp() }
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            GalleryTopAppBar(
+                title = title,
+                leftAction = AppBarAction(actionType = AppBarActionType.NAVIGATE_UP, actionFn = navigateUp),
+            )
+        },
+    ) { innerPadding ->
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            if (task.type == TaskType.GROUP_CHAT) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text("Select Role", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { selectedRole = "Commander" }
+                    ) {
+                        RadioButton(
+                            selected = selectedRole == "Commander",
+                            onClick = { selectedRole = "Commander" }
+                        )
+                        Text("Commander")
+                    }
+                    (1..MAX_SUBORDINATE_COUNT).forEach { agentNumber ->
+                        val agentRole = "Agent$agentNumber"
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { selectedRole = agentRole }
+                        ) {
+                            RadioButton(
+                                selected = selectedRole == agentRole,
+                                onClick = { selectedRole = agentRole }
+                            )
+                            Text(agentRole)
+                        }
+                    }
+                }
+            }
+            if (task.type != TaskType.GROUP_CHAT || isRoleSelected) {
+                ModelList(
+                    task = task,
+                    modelManagerViewModel = viewModel,
+                    onModelClicked = { model ->
+                        val isCommander = selectedRole == "Commander"
+                        val agentName = selectedRole
+                        onModelClicked(model, isCommander, agentName)
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = innerPadding,
+                )
+            }
+        }
+    }
 }
 
 // @Preview

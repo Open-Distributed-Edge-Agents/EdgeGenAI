@@ -81,7 +81,6 @@ fun ModelSelector(
           modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
           showDeleteButton = false,
           showConfigButtonIfExisted = true,
-          canExpand = false,
         )
       }
     }

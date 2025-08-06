@@ -145,7 +145,7 @@ fun convertWavToMonoWithMaxSeconds(
 
     // Normalize audio to 16-bit.
     val audioDataBytes = originalBytes.copyOfRange(fromIndex = 44, toIndex = originalBytes.size)
-    var sixteenBitBytes: ByteArray =
+    val sixteenBitBytes: ByteArray =
       if (bitDepth.toInt() == 8) {
         Log.d(TAG, "Converting 8-bit audio to 16-bit.")
         convert8BitTo16Bit(audioDataBytes)

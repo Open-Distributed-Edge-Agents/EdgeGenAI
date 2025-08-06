@@ -16,10 +16,17 @@
 
 package com.google.ai.edge.gallery.ui.llmchat
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import com.google.ai.edge.gallery.firebaseAnalytics
 import com.google.ai.edge.gallery.ui.common.chat.ChatMessageAudioClip
@@ -39,6 +46,10 @@ object LlmAskImageDestination {
 
 object LlmAskAudioDestination {
   val route = "LlmAskAudioRoute"
+}
+
+object GroupChatDestination {
+  var route = "GroupChatRoute"
 }
 
 @Composable
@@ -78,6 +89,48 @@ fun LlmAskAudioScreen(
   modifier: Modifier = Modifier,
   viewModel: LlmAskAudioViewModel,
 ) {
+  ChatViewWrapper(
+    viewModel = viewModel,
+    modelManagerViewModel = modelManagerViewModel,
+    navigateUp = navigateUp,
+    modifier = modifier,
+  )
+}
+
+@Composable
+fun GroupChatScreen(
+  modelManagerViewModel: ModelManagerViewModel,
+  navigateUp: () -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: LlmGroupChatViewModel,
+  isCommander: Boolean,
+  agentName: String,
+) {
+  val context = LocalContext.current
+  val launcher = rememberLauncherForActivityResult(
+    ActivityResultContracts.RequestPermission()
+  ) { isGranted: Boolean ->
+    if (isGranted) {
+      viewModel.startNearbyConnections(isCommander, agentName)
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      if (ContextCompat.checkSelfPermission(
+          context,
+          Manifest.permission.NEARBY_WIFI_DEVICES
+        ) == PackageManager.PERMISSION_GRANTED
+      ) {
+        viewModel.startNearbyConnections(isCommander, agentName)
+      } else {
+        launcher.launch(Manifest.permission.NEARBY_WIFI_DEVICES)
+      }
+    } else {
+      viewModel.startNearbyConnections(isCommander, agentName)
+    }
+  }
+
   ChatViewWrapper(
     viewModel = viewModel,
     modelManagerViewModel = modelManagerViewModel,

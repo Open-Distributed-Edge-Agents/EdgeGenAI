@@ -131,23 +131,24 @@ private const val TAG = "AGMessageInputText"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessageInputText(
-  modelManagerViewModel: ModelManagerViewModel,
-  curMessage: String,
-  isResettingSession: Boolean,
-  inProgress: Boolean,
-  imageMessageCount: Int,
-  audioClipMessageCount: Int,
-  modelInitializing: Boolean,
-  @StringRes textFieldPlaceHolderRes: Int,
-  onValueChanged: (String) -> Unit,
-  onSendMessage: (List<ChatMessage>) -> Unit,
-  modelPreparing: Boolean = false,
-  onOpenPromptTemplatesClicked: () -> Unit = {},
-  onStopButtonClicked: () -> Unit = {},
-  showPromptTemplatesInMenu: Boolean = false,
-  showImagePickerInMenu: Boolean = false,
-  showAudioItemsInMenu: Boolean = false,
-  showStopButtonWhenInProgress: Boolean = false,
+    modelManagerViewModel: ModelManagerViewModel,
+    curMessage: String,
+    isResettingSession: Boolean,
+    inProgress: Boolean,
+    imageMessageCount: Int,
+    audioClipMessageCount: Int,
+    modelInitializing: Boolean,
+    @StringRes textFieldPlaceHolderRes: Int,
+    onValueChanged: (String) -> Unit,
+    onSendMessage: (List<ChatMessage>) -> Unit,
+    modelPreparing: Boolean = false,
+    onOpenPromptTemplatesClicked: () -> Unit = {},
+    onStopButtonClicked: () -> Unit = {},
+    showPromptTemplatesInMenu: Boolean = false,
+    showImagePickerInMenu: Boolean = false,
+    showAudioItemsInMenu: Boolean = false,
+    showStopButtonWhenInProgress: Boolean = false,
+    bottomContent: @Composable () -> Unit = {}
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -535,6 +536,7 @@ fun MessageInputText(
         Spacer(modifier = Modifier.width(4.dp))
       }
     }
+    bottomContent()
   }
 
   // A bottom sheet to show the text input history to pick from.

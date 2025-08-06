@@ -48,8 +48,10 @@ import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -101,6 +103,7 @@ fun SettingsDialog(
   val focusRequester = remember { FocusRequester() }
   val interactionSource = remember { MutableInteractionSource() }
   var showTos by remember { mutableStateOf(false) }
+  val settings by modelManagerViewModel.settings.collectAsState()
 
   Dialog(onDismissRequest = onDismissed) {
     val focusManager = LocalFocusManager.current
@@ -279,6 +282,29 @@ fun SettingsDialog(
                   }
                 }
               }
+            }
+          }
+
+          // Bypass model allowlist download.
+          Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+              "Bypass model allowlist download",
+              style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+            )
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween,
+              modifier = Modifier.fillMaxWidth(),
+            ) {
+              Text(
+                "Force the app to use the local model allowlist",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+              )
+              Switch(
+                checked = settings.bypassModelAllowlistDownload,
+                onCheckedChange = { modelManagerViewModel.setBypassModelAllowlistDownload(it) },
+              )
             }
           }
 

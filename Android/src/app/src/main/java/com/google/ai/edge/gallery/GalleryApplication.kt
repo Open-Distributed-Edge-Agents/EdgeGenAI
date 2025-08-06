@@ -20,23 +20,47 @@ import android.app.Application
 import com.google.ai.edge.gallery.common.writeLaunchInfo
 import com.google.ai.edge.gallery.data.DataStoreRepository
 import com.google.ai.edge.gallery.ui.theme.ThemeSettings
+import com.google.ai.edge.gallery.data.ObjectBox
+import com.google.ai.edge.gallery.data.SystemPrompt
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
+import io.objectbox.kotlin.boxFor
 import javax.inject.Inject
 
 @HiltAndroidApp
 class GalleryApplication : Application() {
 
-  @Inject lateinit var dataStoreRepository: DataStoreRepository
+    @Inject
+    lateinit var dataStoreRepository: DataStoreRepository
 
-  override fun onCreate() {
-    super.onCreate()
+    override fun onCreate() {
+        super.onCreate()
 
-    writeLaunchInfo(context = this)
+        writeLaunchInfo(context = this)
 
-    // Load saved theme.
-    ThemeSettings.themeOverride.value = dataStoreRepository.readTheme()
+        // Load saved theme.
+        ThemeSettings.themeOverride.value = dataStoreRepository.readTheme()
 
-    FirebaseApp.initializeApp(this)
-  }
+        FirebaseApp.initializeApp(this)
+        ObjectBox.init(this)
+        addInitialSystemPrompts()
+    }
+
+    private fun addInitialSystemPrompts() {
+        val systemPromptBox = ObjectBox.store.boxFor<SystemPrompt>()
+        if (systemPromptBox.isEmpty) {
+            systemPromptBox.put(
+                SystemPrompt(
+                    role = "Commander",
+                    prompt = getString(R.string.system_prompt_commander)
+                )
+            )
+            systemPromptBox.put(
+                SystemPrompt(
+                    role = "Agent",
+                    prompt = getString(R.string.system_prompt_agent)
+                )
+            )
+        }
+    }
 }

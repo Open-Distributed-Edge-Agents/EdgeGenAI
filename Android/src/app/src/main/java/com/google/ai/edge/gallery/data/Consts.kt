@@ -53,3 +53,6 @@ const val MAX_AUDIO_CLIP_DURATION_SEC = 30
 
 // Audio-recording related consts.
 const val SAMPLE_RATE = 16000
+
+// Maximum number of subordinate agents
+const val MAX_SUBORDINATE_COUNT = 3

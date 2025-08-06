@@ -40,6 +40,7 @@ import com.google.ai.edge.gallery.data.TASK_LLM_ASK_AUDIO
 import com.google.ai.edge.gallery.data.TASK_LLM_ASK_IMAGE
 import com.google.ai.edge.gallery.data.TASK_LLM_CHAT
 import com.google.ai.edge.gallery.data.TASK_LLM_PROMPT_LAB
+import com.google.ai.edge.gallery.data.TASK_GROUP_CHAT
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.data.TaskType
 import com.google.ai.edge.gallery.data.createLlmChatConfigs
@@ -47,6 +48,7 @@ import com.google.ai.edge.gallery.data.getModelByName
 import com.google.ai.edge.gallery.data.processTasks
 import com.google.ai.edge.gallery.proto.AccessTokenData
 import com.google.ai.edge.gallery.proto.ImportedModel
+import com.google.ai.edge.gallery.proto.Settings
 import com.google.ai.edge.gallery.proto.Theme
 import com.google.ai.edge.gallery.ui.common.AuthConfig
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatModelHelper
@@ -61,7 +63,10 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -74,7 +79,7 @@ import net.openid.appauth.ResponseTypeValues
 private const val TAG = "AGModelManagerViewModel"
 private const val TEXT_INPUT_HISTORY_MAX_SIZE = 50
 private const val MODEL_ALLOWLIST_URL =
-  "https://raw.githubusercontent.com/google-ai-edge/gallery/refs/heads/main/model_allowlist.json"
+  "https://raw.githubusercontent.com/Open-Distributed-Edge-Agents/EdgeGenAI/refs/heads/nearby-connections/model_allowlist.json"
 private const val MODEL_ALLOWLIST_FILENAME = "model_allowlist.json"
 
 data class ModelInitializationStatus(
@@ -151,6 +156,12 @@ constructor(
     downloadRepository.getEnqueuedOrRunningWorkInfos()
   protected val _uiState = MutableStateFlow(createEmptyUiState())
   val uiState = _uiState.asStateFlow()
+
+  val settings: StateFlow<Settings> = dataStoreRepository.settings().stateIn(
+    scope = viewModelScope,
+    started = SharingStarted.Eagerly,
+    initialValue = Settings.getDefaultInstance()
+  )
 
   val authService = AuthorizationService(context)
   var curAccessToken: String = ""
@@ -288,6 +299,7 @@ constructor(
         }
       }
       when (task.type) {
+        TaskType.GROUP_CHAT,
         TaskType.LLM_CHAT,
         TaskType.LLM_ASK_IMAGE,
         TaskType.LLM_ASK_AUDIO,
@@ -305,6 +317,7 @@ constructor(
       model.cleanUpAfterInit = false
       Log.d(TAG, "Cleaning up model '${model.name}'...")
       when (task.type) {
+        TaskType.GROUP_CHAT,
         TaskType.LLM_CHAT,
         TaskType.LLM_PROMPT_LAB,
         TaskType.LLM_ASK_IMAGE,
@@ -391,6 +404,10 @@ constructor(
 
   fun saveThemeOverride(theme: Theme) {
     dataStoreRepository.saveTheme(theme = theme)
+  }
+
+  fun setBypassModelAllowlistDownload(bypass: Boolean) {
+    dataStoreRepository.setBypassModelAllowlistDownload(bypass)
   }
 
   fun getModelUrlResponse(model: Model, accessToken: String? = null): Int {
@@ -643,16 +660,22 @@ constructor(
     viewModelScope.launch(Dispatchers.IO) {
       try {
         // Load model allowlist json.
-        Log.d(TAG, "Loading model allowlist from internet...")
-        val data = getJsonResponse<ModelAllowlist>(url = MODEL_ALLOWLIST_URL)
-        var modelAllowlist: ModelAllowlist? = data?.jsonObj
+        var modelAllowlist: ModelAllowlist? = null
+        if (!settings.value.bypassModelAllowlistDownload) {
+          Log.d(TAG, "Loading model allowlist from internet...")
+          val data = getJsonResponse<ModelAllowlist>(url = MODEL_ALLOWLIST_URL)
+          modelAllowlist = data?.jsonObj
+          if (modelAllowlist != null && modelAllowlist.models.isNotEmpty()) {
+            Log.d(TAG, "Done: loading model allowlist from internet")
+            saveModelAllowlistToDisk(modelAllowlistContent = data?.textContent ?: "{}")
+          }
+        } else {
+          Log.d(TAG, "Bypassing model allowlist download")
+        }
 
         if (modelAllowlist == null) {
           Log.d(TAG, "Failed to load model allowlist from internet. Trying to load it from disk")
           modelAllowlist = readModelAllowlistFromDisk()
-        } else {
-          Log.d(TAG, "Done: loading model allowlist from internet")
-          saveModelAllowlistToDisk(modelAllowlistContent = data?.textContent ?: "{}")
         }
 
         if (modelAllowlist == null) {
@@ -669,6 +692,7 @@ constructor(
         TASK_LLM_PROMPT_LAB.models.clear()
         TASK_LLM_ASK_IMAGE.models.clear()
         TASK_LLM_ASK_AUDIO.models.clear()
+        TASK_GROUP_CHAT.models.clear()
         for (allowedModel in modelAllowlist.models) {
           if (allowedModel.disabled == true) {
             continue
@@ -686,6 +710,9 @@ constructor(
           }
           if (allowedModel.taskTypes.contains(TASK_LLM_ASK_AUDIO.type.id)) {
             TASK_LLM_ASK_AUDIO.models.add(model)
+          }
+          if (allowedModel.taskTypes.contains(TASK_GROUP_CHAT.type.id)) {
+            TASK_GROUP_CHAT.models.add(model)
           }
         }
 
