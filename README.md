@@ -1,5 +1,7 @@
 # Stigmergy ODEA (Open Distributed Edge Agents)
 
+The active development is in the [nearby-connections](https://github.com/Open-Distributed-Edge-Agents/EdgeGenAI/tree/nearby-connections) feature branch.
+
 ## Overview
 
 Stigmergy ODEA is a decentralized, agentic system designed for high-stakes tactical operations on edge devices. It leverages the multi-modal capabilities of Google's groundbreaking Gemma 3B model to create a collective intelligence highly resistant to malfunctions and adversarial attacks.
