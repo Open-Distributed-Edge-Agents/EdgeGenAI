@@ -27,11 +27,23 @@ class SystemPromptRepository @Inject constructor(@ApplicationContext private val
     private val systemPromptBox = ObjectBox.store.boxFor<SystemPrompt>()
 
     fun getSystemPrompt(role: String): SystemPrompt? {
-        if (role == "Commander") {
-            val prompt = context.assets.open("commander_system_prompt.md").bufferedReader().use { it.readText() }
-            return SystemPrompt(role = role, prompt = prompt)
+        val promptFromDb = systemPromptBox.query(SystemPrompt_.role.equal(role)).build().findFirst()
+        if (promptFromDb != null) {
+            return promptFromDb
         }
-        return systemPromptBox.query(SystemPrompt_.role.equal(role)).build().findFirst()
+
+        val promptFileName = when (role) {
+            "Commander" -> "commander_system_prompt.md"
+            "Agent" -> "agent_system_prompt.md"
+            else -> return null
+        }
+
+        return try {
+            val prompt = context.assets.open(promptFileName).bufferedReader().use { it.readText() }
+            SystemPrompt(role = role, prompt = prompt)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun updateSystemPrompt(systemPrompt: SystemPrompt) {

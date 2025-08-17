@@ -154,16 +154,14 @@ open class LlmChatViewModelBase(
         val role = if (isCommander) "Commander" else "Agent"
         val systemPrompt = systemPromptRepository.getSystemPrompt(role)
         if (systemPrompt != null) {
-            val instruction = context.assets.open("agent_system_prompt.md").bufferedReader().use { it.readText() }
-            val mission = loadMissionDescription(applicationContext, nonNullAgentName)
-            var prompt = if (role.startsWith("Agent")) {
-                String.format(systemPrompt.prompt, agentName)
-            } else {
-                systemPrompt.prompt
+            var prompt = systemPrompt.prompt
+            if (!isCommander) {
+                val mission = loadMissionDescription(applicationContext, nonNullAgentName)
+                prompt = String.format(prompt, agentName)
+                prompt = prompt.replace("[YOUR_AGENT_ID]", nonNullAgentName)
+                prompt = prompt.replace("[PERSONALIZED_MISSION_STATEMENT]", mission)
             }
-            prompt = prompt.replace("[YOUR_AGENT_ID]", nonNullAgentName)
-            prompt = prompt.replace("[PERSONALIZED_MISSION_STATEMENT]", mission)
-            applySystemPrompt("$instruction\n\n$prompt")
+            applySystemPrompt(prompt)
         }
 
         if (isCommander) {

@@ -20,13 +20,13 @@ import android.content.Context
 import java.io.InputStream
 
 fun loadMissionDescription(context: Context, agentName: String): String {
-    val agentNumber = agentName.replace("Agent", "").trim().toInt()
-    val resourceId = context.resources.getIdentifier(
-        "mission_agent_$agentNumber",
-        "raw",
-        context.packageName
-    )
     return try {
+        val agentNumber = agentName.replace("Agent", "").trim().toInt()
+        val resourceId = context.resources.getIdentifier(
+            "mission_agent_$agentNumber",
+            "raw",
+            context.packageName
+        )
         val inputStream: InputStream = context.resources.openRawResource(resourceId)
         inputStream.bufferedReader().use { it.readText() }
     } catch (e: Exception) {
