@@ -106,7 +106,7 @@ class NearbyConnectionsManager @Inject constructor(
             val endpointName = connectedEndpoints[endpointId]
             connectedEndpoints.remove(endpointId)
             onEndpointDisconnected?.invoke(endpointId, endpointName)
-            if (endpointId == "Commander") {
+            if (endpointName == "Commander") {
                 onCommanderDisconnected()
             }
         }
