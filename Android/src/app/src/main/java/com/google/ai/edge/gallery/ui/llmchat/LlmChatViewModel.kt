@@ -129,8 +129,8 @@ open class LlmChatViewModelBase(
             }
         }
 
-        nearbyConnectionsManager.onEndpointDisconnected = { endpointId ->
-            if (endpointId == "Commander") {
+        nearbyConnectionsManager.onEndpointDisconnected = { endpointId, endpointName ->
+            if (endpointName == "Commander") {
                 // The commander is disconnected, start discovering for a new one.
                 nearbyConnectionsManager.startDiscovery(agentName)
             }

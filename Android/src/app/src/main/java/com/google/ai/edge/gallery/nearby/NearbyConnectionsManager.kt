@@ -58,7 +58,7 @@ class NearbyConnectionsManager @Inject constructor(
 
     var onMessageReceived: ((String, String, Boolean, String) -> Unit)? = null
     var onEndpointConnected: ((String) -> Unit)? = null
-    var onEndpointDisconnected: ((String) -> Unit)? = null
+    var onEndpointDisconnected: ((String, String?) -> Unit)? = null
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
@@ -102,8 +102,9 @@ class NearbyConnectionsManager @Inject constructor(
 
         override fun onDisconnected(endpointId: String) {
             Log.d(TAG, "Disconnected from $endpointId")
+            val endpointName = connectedEndpoints[endpointId]
             connectedEndpoints.remove(endpointId)
-            onEndpointDisconnected?.invoke(endpointId)
+            onEndpointDisconnected?.invoke(endpointId, endpointName)
             if (endpointId == "Commander") {
                 onCommanderDisconnected()
             }
