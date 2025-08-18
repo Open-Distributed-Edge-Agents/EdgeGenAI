@@ -99,44 +99,53 @@ fun LlmAskAudioScreen(
 
 @Composable
 fun GroupChatScreen(
-  modelManagerViewModel: ModelManagerViewModel,
-  navigateUp: () -> Unit,
-  modifier: Modifier = Modifier,
-  viewModel: LlmGroupChatViewModel,
-  isCommander: Boolean,
-  agentName: String,
+    modelManagerViewModel: ModelManagerViewModel,
+    navigateUp: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: LlmGroupChatViewModel,
+    isCommander: Boolean,
+    agentName: String,
 ) {
-  val context = LocalContext.current
-  val launcher = rememberLauncherForActivityResult(
-    ActivityResultContracts.RequestPermission()
-  ) { isGranted: Boolean ->
-    if (isGranted) {
-      viewModel.startNearbyConnections(isCommander, agentName)
-    }
-  }
-
-  LaunchedEffect(Unit) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      if (ContextCompat.checkSelfPermission(
-          context,
-          Manifest.permission.NEARBY_WIFI_DEVICES
-        ) == PackageManager.PERMISSION_GRANTED
-      ) {
-        viewModel.startNearbyConnections(isCommander, agentName)
-      } else {
-        launcher.launch(Manifest.permission.NEARBY_WIFI_DEVICES)
-      }
+    val context = LocalContext.current
+    val requiredPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        arrayOf(
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_ADVERTISE,
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_WIFI_STATE
+        )
     } else {
-      viewModel.startNearbyConnections(isCommander, agentName)
+        arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_WIFI_STATE
+        )
     }
-  }
 
-  ChatViewWrapper(
-    viewModel = viewModel,
-    modelManagerViewModel = modelManagerViewModel,
-    navigateUp = navigateUp,
-    modifier = modifier,
-  )
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            viewModel.startNearbyConnections(isCommander, agentName)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (requiredPermissions.all {
+                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            }) {
+            viewModel.startNearbyConnections(isCommander, agentName)
+        } else {
+            launcher.launch(requiredPermissions)
+        }
+    }
+
+    ChatViewWrapper(
+        viewModel = viewModel,
+        modelManagerViewModel = modelManagerViewModel,
+        navigateUp = navigateUp,
+        modifier = modifier,
+    )
 }
 
 @Composable
