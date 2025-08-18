@@ -23,6 +23,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -137,6 +138,12 @@ fun GroupChatScreen(
             viewModel.startNearbyConnections(isCommander, agentName)
         } else {
             launcher.launch(requiredPermissions)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopNearbyConnections()
         }
     }
 
