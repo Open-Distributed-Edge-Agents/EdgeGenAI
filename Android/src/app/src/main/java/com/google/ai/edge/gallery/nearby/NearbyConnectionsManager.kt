@@ -81,6 +81,7 @@ class NearbyConnectionsManager @Inject constructor(
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             // Automatically accept the connection on both sides.
             val endpointName = connectionInfo.endpointName
+            Log.d(TAG, "Connection initiated $endpointId $endpointName")
 //            if (connectedEndpoints.containsValue(endpointName)) {
 //                onImpersonationDetected?.invoke(endpointName)
 //                connectionsClient.rejectConnection(endpointId)
@@ -114,11 +115,23 @@ class NearbyConnectionsManager @Inject constructor(
     private var agentName: String? = null
     private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
         override fun onEndpointFound(endpointId: String, discoveredEndpointInfo: DiscoveredEndpointInfo) {
-            Log.d(TAG, "Endpoint found: $endpointId")
+            Log.d(TAG, "Endpoint found: $endpointId with name ${discoveredEndpointInfo.endpointName}")
+
+            if (endpointId == myEndpointId) return
+
             if (discoveredEndpointInfo.endpointName == "Commander") {
+                // This logic is for both agents and temporary commanders.
+                // The onOriginalCommanderFound function handles the difference in behavior.
                 onOriginalCommanderFound()
             }
-            connectionsClient.requestConnection(agentName ?: "Subordinate", endpointId, connectionLifecycleCallback)
+
+            // Only agents (devices that are not advertising) should initiate connections.
+            // A temporary commander that has just relinquished its role (and is no longer advertising)
+            // will fall into this category and attempt to connect to the original commander.
+            if (!isAdvertising) {
+                Log.d(TAG, "Agent ($agentName) connecting to $endpointId")
+                connectionsClient.requestConnection(agentName ?: "Subordinate", endpointId, connectionLifecycleCallback)
+            }
         }
 
         override fun onEndpointLost(endpointId: String) {
@@ -219,6 +232,8 @@ class NearbyConnectionsManager @Inject constructor(
         val sortedEndpoints = connectedEndpoints.keys.sorted()
         if (sortedEndpoints.isNotEmpty() && sortedEndpoints.first() == myEndpointId) {
             startAdvertising("Commander")
+            // A temporary commander must also discover to find the original commander if it comes back.
+            startDiscovery(myEndpointId)
         } else {
             startDiscovery(myEndpointId)
         }
@@ -234,9 +249,11 @@ class NearbyConnectionsManager @Inject constructor(
         // If I am a temporary commander, I will stop advertising and start discovering.
         // Otherwise, I will disconnect from the temporary commander and connect to the original one.
         if (isAdvertising) {
+            Log.d(TAG, "Temporary commander found original commander. Relinquishing role.")
             stopAdvertising()
             startDiscovery(myEndpointId)
         } else {
+            Log.d(TAG, "Agent found a commander. Resetting connections to ensure it's the original.")
             stopAllEndpoints()
             startDiscovery(myEndpointId)
         }
