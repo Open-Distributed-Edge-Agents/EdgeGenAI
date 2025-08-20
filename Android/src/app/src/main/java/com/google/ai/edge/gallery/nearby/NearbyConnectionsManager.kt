@@ -53,6 +53,7 @@ class NearbyConnectionsManager @Inject constructor(
 
     private var isAdvertising = false
     private var isDiscovering = false
+    private var hasConnectedToCommander = false
 
     private val connectedEndpoints = mutableMapOf<String, String>()
 
@@ -94,6 +95,10 @@ class NearbyConnectionsManager @Inject constructor(
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
             if (result.status.isSuccess) {
                 Log.d(TAG, "Connection successful with $endpointId")
+                if (connectedEndpoints[endpointId] == "Commander") {
+                    hasConnectedToCommander = true
+                    stopDiscovery() // Stop discovery once connected to a commander
+                }
                 onEndpointConnected?.invoke(endpointId)
             } else {
                 Log.d(TAG, "Connection failed with $endpointId")
@@ -104,6 +109,9 @@ class NearbyConnectionsManager @Inject constructor(
         override fun onDisconnected(endpointId: String) {
             Log.d(TAG, "Disconnected from $endpointId")
             val endpointName = connectedEndpoints[endpointId]
+            if (endpointName == "Commander") {
+                hasConnectedToCommander = false
+            }
             connectedEndpoints.remove(endpointId)
             onEndpointDisconnected?.invoke(endpointId, endpointName)
             if (endpointName == "Commander") {
@@ -119,18 +127,19 @@ class NearbyConnectionsManager @Inject constructor(
 
             if (endpointId == myEndpointId) return
 
+            // Agents should only connect to Commanders in a star topology.
             if (discoveredEndpointInfo.endpointName == "Commander") {
-                // This logic is for both agents and temporary commanders.
-                // The onOriginalCommanderFound function handles the difference in behavior.
-                onOriginalCommanderFound()
-            }
-
-            // Only agents (devices that are not advertising) should initiate connections.
-            // A temporary commander that has just relinquished its role (and is no longer advertising)
-            // will fall into this category and attempt to connect to the original commander.
-            if (!isAdvertising) {
-                Log.d(TAG, "Agent ($agentName) connecting to $endpointId")
-                connectionsClient.requestConnection(agentName ?: "Subordinate", endpointId, connectionLifecycleCallback)
+                if (hasConnectedToCommander) {
+                    // We are already connected to a (temporary) commander, and we've found another one.
+                    // This must be the original commander returning.
+                    onOriginalCommanderFound()
+                } else if (isDiscovering) { // Check if we are in a state to connect
+                    // This is the first time we're connecting to a commander.
+                    Log.d(TAG, "Agent ($agentName) found initial commander. Attempting to connect.")
+                    // Stop discovery to prevent a loop of finding the same commander and trying to connect repeatedly.
+                    stopDiscovery()
+                    connectionsClient.requestConnection(agentName ?: "Subordinate", endpointId, connectionLifecycleCallback)
+                }
             }
         }
 
@@ -146,16 +155,23 @@ class NearbyConnectionsManager @Inject constructor(
         }
 
         val advertisingOptions = AdvertisingOptions.Builder().setStrategy(Strategy.P2P_STAR).build()
+        Log.d(TAG, "Attempting to start advertising...")
         connectionsClient.startAdvertising(
             endpointName,
             SERVICE_ID,
             connectionLifecycleCallback,
             advertisingOptions
         ).addOnSuccessListener {
-            Log.d(TAG, "Started advertising")
+            Log.d(TAG, "Successfully started advertising.")
             isAdvertising = true
-        }.addOnFailureListener {
-            Log.e(TAG, "Failed to start advertising", it)
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "Failed to start advertising.", e)
+            isAdvertising = false
+        }.addOnCompleteListener { task ->
+            Log.d(TAG, "Start advertising task completed. isSuccessful: ${task.isSuccessful}, isCanceled: ${task.isCanceled}, isComplete: ${task.isComplete}")
+            if (!task.isSuccessful) {
+                isAdvertising = false
+            }
         }
     }
 
