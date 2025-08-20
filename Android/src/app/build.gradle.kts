@@ -46,6 +46,7 @@ android {
         "REPLACE_WITH_YOUR_REDIRECT_SCHEME_IN_HUGGINGFACE_APP"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    buildConfigField("boolean", "FIREBASE_ENABLED", "false")
   }
 
   buildTypes {
